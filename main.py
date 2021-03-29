@@ -1,5 +1,6 @@
 import discord
 import os
+from keep_alive import keep_alive
 
 client = discord.Client()
 
@@ -24,4 +25,5 @@ async def on_message(message):
     text = f'Hello {message.author.name}!'
     await message.reply(text)
 
+keep_alive()
 client.run(os.getenv('TOKEN'))
