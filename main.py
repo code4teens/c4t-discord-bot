@@ -32,51 +32,24 @@ async def on_message(message):
     await message.reply(text)
 
   if message.content == '~joke':
-    try:
-      data = helper.handle_request_from('https://official-joke-api.appspot.com/random_joke')
+    text = helper.joke_command()
 
-    except Exception as error:
-      print(f'~joke: {error}')
-
-      await message.reply('Something weng wrong..')
-
-    else:
-      text = f'{data["setup"]}\n\n{data["punchline"]}'
-      
-      await message.reply(text)
+    await message.reply(text)
 
   if message.content == '~ip':
-    try:
-      data = helper.handle_request_from('https://api.ipify.org/?format=json')
+    text = helper.ip_command()
 
-    except Exception as error:
-      print(f'~ip: {error}')
-
-      await message.reply('Something weng wrong..')
-
-    else:
-      text = data["ip"]
-
-      await message.reply(text)
+    await message.reply(text)
 
   if message.content == '~iplocation':
-    try:
-      data1 = helper.handle_request_from('https://api.ipify.org/?format=json')
-      ip = data1["ip"]
-      data2 = helper.handle_request_from(f'https://ipinfo.io/{ip}/geo')
-      data3 = helper.handle_request_from(f'https://api.ip2country.info/ip?{ip}')
+    d = helper.iplocation_command()
 
-    except Exception as error:
-      print(f'~iplocation: {error}')
-
-      await message.reply('Something weng wrong..')
+    if isinstance(d, dict):
+      await message.reply(d['text'])
+      await message.add_reaction(d['emoji'])
 
     else:
-      text = f'{data2["city"]}, {data2["region"]}, {data2["country"]}'
-      emoji = data3["countryEmoji"]
-
-      await message.add_reaction(emoji)
-      await message.reply(text)
+      await message.reply(d)
 
 keep_alive()
 client.run(os.getenv('TOKEN'))
