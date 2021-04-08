@@ -4,37 +4,41 @@ def set_stats(id):
   key = f'{id}-stats'
   u.put(0, f'{key}-level')
   u.put(0, f'{key}-xp')
+  u.put(0, f'{key}-last')
 
 def give_xp(message):
   key = f'{message.author.id}-stats'
   lvl_key = f'{key}-level'
   xp_key = f'{key}-xp'
+  last_key = f'{key}-last'
   user_did_level_up = False
 
   try:
     level = u.get_value(lvl_key)
     xp = u.get_value(xp_key)
+    last = u.get_value(last_key)
 
   except Exception as e:
     print(f'ERROR: give_xp({message.author.id}): {e}')
 
   else:
-    xp += 10
-    xp_to_next_level = 5 * level ** 2 + 50 * level + 100
+    now = u.get_epoch()
 
-    if xp >= xp_to_next_level:
-      level += 1
-      xp -= xp_to_next_level
-      user_did_level_up = True
+    if now - last > 3:
+      xp += 10
+      xp_to_next_level = 5 * level ** 2 + 50 * level + 100
 
-    u.put(level, lvl_key)
-    u.put(xp, xp_key)
+      if xp >= xp_to_next_level:
+        level += 1
+        xp -= xp_to_next_level
+        user_did_level_up = True
 
-    if user_did_level_up:
-      return f'{message.author.mention} has been promoted to Level {level}'
+      u.put(level, lvl_key)
+      u.put(xp, xp_key)
+      u.put(now, last_key)
 
-    else:
-      return None
+      if user_did_level_up:
+        return f'{message.author.mention} has been promoted to Level {level}!'
 
 def joke_command():
   try:

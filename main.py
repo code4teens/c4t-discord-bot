@@ -36,12 +36,13 @@ async def on_message(message):
 
   if message.content == '~help':
     text = (
-      'Available commands:\n'
-      '>>> `~help` - Shows available commands.\n'
-      '`~greet` - Greets user.\n'
-      '`~joke` - d08 ex00\n'
-      '`~ip` - d08 ex01\n'
-      '`~iplocation` - d08 ex02&03'
+      '```fix\n'
+      '~help       - Shows (all?) commands.\n'
+      '~greet      - Greets user.\n'
+      '~joke       - d08 ex00\n'
+      '~ip         - d08 ex01\n'
+      '~iplocation - d08 ex02 & 03\n'
+      '```'
     )
 
     await message.reply(text)

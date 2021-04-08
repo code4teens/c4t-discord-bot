@@ -1,4 +1,5 @@
 import requests
+import time
 from replit import db
 
 def get_JSON(URL):
@@ -9,6 +10,9 @@ def get_JSON(URL):
 
   else: 
     raise Exception(r.status_code)
+
+def get_epoch():
+  return int(time.time())
 
 def keys():
   return db.keys()
