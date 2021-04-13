@@ -1,72 +1,154 @@
+import constants as c
 import utilities as u
 
-def set_stats(id):
-  key = f'{id}-stats'
-  u.put(0, f'{key}-level')
-  u.put(0, f'{key}-xp')
-  u.put(0, f'{key}-last')
+def get_role_members(bot, guild_id, role_id):
+  guild = bot.get_guild(guild_id)
 
-def give_xp(message):
-  key = f'{message.author.id}-stats'
-  lvl_key = f'{key}-level'
-  xp_key = f'{key}-xp'
-  last_key = f'{key}-last'
-  user_did_level_up = False
+  for role in guild.roles:
+    if role.id == role_id:
+      return role.members
 
-  try:
-    level = u.get_value(lvl_key)
-    xp = u.get_value(xp_key)
-    last = u.get_value(last_key)
+def dev_command_check(message):
+  if c.devs not in [role.id for role in message.author.roles] \
+  and (command := message.content.split()[0]) in c.dev_command_list:
+    raise u.DevException(f'You are not authorised to use `{command}`!')
 
-  except Exception as e:
-    print(f'ERROR: give_xp({message.author.id}): {e}')
+def channel_command_check(bot, message):
+  dev_terminal_channel = bot.get_channel(c.dev_terminal)
+  stu_ttb_channel = bot.get_channel(c.stu_ttb)
+
+  if c.devs in [role.id for role in message.author.roles] \
+  and message.channel.id != c.dev_terminal \
+  and message.channel.id != c.stu_ttb:
+    raise u.ChannelException(f'Kindly utilise me at {dev_terminal_channel.mention} or {stu_ttb_channel.mention}.')
+
+  if c.students in [role.id for role in message.author.roles] \
+  and message.channel.id != c.stu_ttb:
+    raise u.ChannelException(f'Kindly utilise me at {stu_ttb_channel.mention}.')
+
+async def attach_command(bot, message):
+  match = u.re_search(c.attach_regex, message.content)
+
+  if match:
+    try:
+      message_data = message.content.split(' ', 2)
+      channel_id = int(message_data[1][2:20])
+      description = message_data[2]
+
+    except Exception as e:
+      print(f'ERROR: $attach: {e}')
+
+      await message.reply('Something went wrong..')
+
+    else:
+      if message.attachments:
+        channel = bot.get_channel(channel_id)
+        file = await message.attachments[0].to_file()
+
+        try:
+          await channel.send(description, file = file)
+
+        except Exception as e:
+          print(f'ERROR: $attach: {e}')
+
+          await message.reply(f'I do not have write permissions in {channel.mention}.')
+
+      else:
+        await message.reply('You forgot to include the attachment.')
 
   else:
-    now = u.get_epoch()
+    await message.reply('`$attach [#channel] [description]`')
 
-    if now - last > 3:
-      xp += 10
-      xp_to_next_level = 5 * level ** 2 + 50 * level + 100
+async def devecho_command(bot, message):
+  match = u.re_search(c.devecho_regex, message.content)
+      
+  if match:
+    try:
+      message_data = message.content.split(' ', 2)
+      channel_id = int(message_data[1][2:20])
+      text = message_data[2]
+        
+    except Exception as e:
+      print(f'ERROR: $devecho: {e}')
 
-      if xp >= xp_to_next_level:
-        level += 1
-        xp -= xp_to_next_level
-        user_did_level_up = True
+      await message.reply('Something went wrong..')
 
-      u.put(level, lvl_key)
-      u.put(xp, xp_key)
-      u.put(now, last_key)
+    else:
+      channel = bot.get_channel(channel_id)
 
-      if user_did_level_up:
-        return f'{message.author.mention} has been promoted to Level {level}!'
+      try:
+        await channel.send(text)
 
-def joke_command():
+      except Exception as e:
+        print(f'ERROR: $devecho: {e}')
+
+        await message.reply(f'I do not have write permissions in {channel.mention}.')
+        
+  else:
+    await message.reply('`$devecho [#channel] [message]`')
+
+async def add_bot_command(bot, message):
+  match = u.re_search(c.add_bot_regex, message.content)
+
+  if match:
+    try:
+      message_data = message.content.split(' ', 1)
+      bot_id = int(message_data[1][51:69])
+      link = message_data[1]
+
+    except Exception as e:
+      print(f'ERROR: $addbot: {e}')
+
+      await message.reply('Something went wrong..')
+
+    else:
+      channel = bot.get_channel(c.dev_log)
+      key = f'{bot_id}-add-bot'
+
+      if key not in u.keys():
+        try:
+          log_message = await channel.send(link)
+          u.put(log_message.id, key)
+
+        except Exception as e:
+          print(f'ERROR: $addbot: {e}')
+
+          await message.reply('Something went wrong..')
+
+        else:
+          await message.reply('The Devs will add your bot into the server soon.')
+
+      else:
+        await message.reply('You already submitted a request for this bot.')
+
+  else:
+    await message.reply('`$addbot [bot-invite-link]`')
+
+async def joke_command(message):
   try:
     data = u.get_JSON('https://official-joke-api.appspot.com/random_joke')
 
   except Exception as e:
-    print(f'ERROR: ~joke: {e}')
+    print(f'ERROR: $joke: {e}')
 
-    return 'Something weng wrong..'
+    await message.reply('Something weng wrong..')
 
   else:
-    return f'{data["setup"]}\n\n{data["punchline"]}'
+    await message.reply(f'{data["setup"]}\n\n{data["punchline"]}')
 
-def ip_command():
+async def ip_command(message):
   try:
     data = u.get_JSON('https://api.ipify.org/?format=json')
 
   except Exception as e:
-    print(f'ERROR: ~ip: {e}')
+    print(f'ERROR: $ip: {e}')
 
-    return 'Something weng wrong..'
+    await message.reply('Something weng wrong..')
 
   else:
-    return data['ip']
+    await message.reply(data['ip'])
 
-def iplocation_command():
-  d = dict()
-
+async def iplocation_command(message):
   try:
     data1 = u.get_JSON('https://api.ipify.org/?format=json')
     ip = data1['ip']
@@ -74,13 +156,84 @@ def iplocation_command():
     data3 = u.get_JSON(f'https://api.ip2country.info/ip?{ip}')
 
   except Exception as e:
-    print(f'ERROR: ~iplocation: {e}')
-    d['error'] = 'Something went wrong..'
+    print(f'ERROR: $iplocation: {e}')
 
-    return d
+    await message.reply('Something went wrong..')
 
   else:
-    d['text'] = f'{data2["city"]}, {data2["region"]}, {data2["country"]}'
-    d['emoji'] = data3['countryEmoji']
+    await message.reply(f'{data2["city"]}, {data2["region"]}, {data2["country"]}')
+    await message.add_reaction(data3['countryEmoji'])
 
-    return d
+async def bot_join_check(bot, member):
+  if member.guild.id == c.guild and member.bot:
+    key = f'{member.id}-add-bot'
+
+    try:
+      message_id = int(u.get_value(key))
+    
+    except Exception as e:
+      print(f'ERROR: bot_join_check({member.name}: {member.id}): {e}')
+
+    else:
+      log_channel = bot.get_channel(c.dev_log)
+      message = await log_channel.fetch_message(message_id)
+      
+      await message.add_reaction(c.tick_emoji)
+
+    finally:
+      role = member.guild.get_role(c.student_bots)
+      welcome_channel = bot.get_channel(c.stu_chit_chat)
+
+      await member.add_roles(role)
+      await welcome_channel.send(f'Welcome {member.mention}!')
+
+async def give_students_xp(message):
+  if c.students in [role.id for role in message.author.roles]:
+    key = f'{message.author.id}-stats'
+    lvl_key = f'{key}-level'
+    xp_key = f'{key}-xp'
+    last_key = f'{key}-last'
+
+    try:
+      level = u.get_value(lvl_key)
+      xp = u.get_value(xp_key)
+      last = u.get_value(last_key)
+
+    except Exception as e:
+      print(f'ERROR: give_students_xp({message.author.name}: {message.author.id}): {e}')
+
+    else:
+      now = u.get_epoch()
+
+      if now - last > 3:
+        xp += 10
+        next_level_xp = 5 * level ** 2 + 50 * level + 100
+
+        if xp >= next_level_xp:
+          level += 1
+          xp -= next_level_xp
+          
+          await message.reply(f'You have been promoted to Level {level}! Keep going at it!')
+
+        u.put(level, lvl_key)
+        u.put(xp, xp_key)
+        u.put(now, last_key)
+
+async def agree_coc_check(bot, payload):
+  guild = bot.get_guild(payload.guild_id)
+  channel = bot.get_channel(payload.channel_id)
+  member = guild.get_member(payload.user_id)
+  emoji = str(payload.emoji)
+
+  if guild.id == c.guild and channel.id == c.imp_coc and len(member.roles) == 1 and emoji == c.ok_emoji:
+    key = f'{member.id}-stats'
+    u.put(0, f'{key}-level')
+    u.put(0, f'{key}-xp')
+    u.put(0, f'{key}-last')
+
+    role = guild.get_role(c.students)
+    reason = f'{member} agreed to Code of Conduct.'
+    welcome_channel = bot.get_channel(c.stu_chit_chat)
+
+    await member.add_roles(role, reason = reason)
+    await welcome_channel.send(f'Welcome {member.mention}!')
