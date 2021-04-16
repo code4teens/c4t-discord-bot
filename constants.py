@@ -1,16 +1,22 @@
 import os
 
 token = os.getenv('TOKEN')
-guild = int(os.getenv('GUILD'))
-devs = int(os.getenv('ROLE_DEVS'))
-students = int(os.getenv('ROLE_STUDENTS'))
-student_bots = int(os.getenv('ROLE_STUDENT_BOTS'))
-dev_terminal = int(os.getenv('CHANNEL_DEV_TERMINAL'))
-dev_log = int(os.getenv('CHANNEL_DEV_LOG'))
-imp_alerts = int(os.getenv('CHANNEL_IMP_ALERTS'))
-imp_coc = int(os.getenv('CHANNEL_IMP_COC'))
-stu_chit_chat = int(os.getenv('CHANNEL_STU_CHIT_CHAT'))
-stu_ttb = int(os.getenv('CHANNEL_STU_TTB'))
+guild_id = int(os.getenv('GUILD'))
+r_devs_id = int(os.getenv('ROLE_DEVS'))
+r_students_id = int(os.getenv('ROLE_STUDENTS'))
+r_student_bots_id = int(os.getenv('ROLE_STUDENT_BOTS'))
+r_village1_id = int(os.getenv('ROLE_VILLAGE_1'))
+r_village2_id = int(os.getenv('ROLE_VILLAGE_2'))
+r_village3_id = int(os.getenv('ROLE_VILLAGE_3'))
+r_village4_id = int(os.getenv('ROLE_VILLAGE_4'))
+r_village5_id = int(os.getenv('ROLE_VILLAGE_5'))
+c_dev_terminal_id = int(os.getenv('CHANNEL_DEV_TERMINAL'))
+c_dev_log_id = int(os.getenv('CHANNEL_DEV_LOG'))
+c_imp_alerts_id = int(os.getenv('CHANNEL_IMP_ALERTS'))
+c_imp_coc_id = int(os.getenv('CHANNEL_IMP_COC'))
+c_imp_introduction_id = int(os.getenv('CHANNEL_IMP_INTRODUCTION'))
+c_stu_chit_chat_id = int(os.getenv('CHANNEL_STU_CHIT_CHAT'))
+c_stu_ttb_id = int(os.getenv('CHANNEL_STU_TTB'))
 
 #\U0001F197
 ok_emoji = '🆗'
@@ -21,14 +27,15 @@ tick_emoji = '✅'
 #\U0000274C
 cross_emoji = '❌'
 
-dev_command_list = [
-  '$devhelp',
-  '$attach',
-  '$devecho'
-]
+attach_regex = '\$attach <#[0-9]{18}> .+'
+devecho_regex = '\$devecho <#[0-9]{18}> .+'
+addbot_regex = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=[0-9]{18}&permissions=[0-9]+&scope=bot'
+adopt_regex = '\$adopt <@![0-9]{18}>'
+release_regex = '\$release <@![0-9]{18}>'
 
 dev_help_text = (
   '```fix\n'
+  '$assign  - Assigns students into villages.\n'
   '$attach  - Sends attachment with description to specified channel.\n'
   '$devecho - Sends message to specified channel.\n'
   '```'
@@ -36,7 +43,15 @@ dev_help_text = (
 
 help_text = (
   '```fix\n'
-  '$help        - Shows (all?) commands.\n'
+  '$help    - Shows (all?) commands.\n'
+  '$addbot  - Adds bot to server.\n'
+  '$adopt   - Adopts bot into your village\n'
+  '$release - Releases bot from your village.\n'
+  '```'
+)
+
+modules_text = (
+  '```fix\n'
   '$hello       - d03 ex04\n'
   '$greet       - d03 ex05\n'
   '$echo        - d04 ex01\n'
@@ -57,42 +72,52 @@ help_text = (
   '$currency    - d07 ex00\n'
   '$job         - d07 ex01\n'
   '$movie       - d07 ex02\n'
-  '$joke        - d08 ex00\n'
-  '$ip          - d08 ex01\n'
-  '$iplocation  - d08 ex02 & 03\n'
+  '$ip          - d08 ex00\n'
+  '$iplocation  - d08 ex01 & 02\n'
   '```'
 )
 
-rpslist = [
+r_village_ids = [
+  r_village1_id,
+  r_village2_id,
+  r_village3_id,
+  r_village4_id,
+  r_village5_id
+]
+
+dev_commands = [
+  '$devhelp',
+  '$assign',
+  '$attach',
+  '$devecho'
+]
+
+rps = [
   '$rock',
   '$paper',
   '$scissors'
 ]
 
-rpsans = [
+rps_ans = [
   'I choose rock!',
   'I choose paper!',
   'I choose scissors!'
 ]
 
-winlist = [
+rps_win = [
 'You win!',
 'You won!',
 'Wow, you beat me!'
 ]
 
-loselist = [
+rps_lose = [
   'You lose!',
   'You lost!',
   'Better luck next time!'
 ]
 
-tielist  = [
+rps_tie = [
   'It\'s a tie!',
   'We tied!',
   'Great minds think alike!'
 ]
-
-attach_regex = '\$attach <#[0-9]{18}> .+'
-devecho_regex = '\$devecho <#[0-9]{18}> .+'
-add_bot_regex = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=[0-9]{18}&permissions=[0-9]+&scope=bot'
