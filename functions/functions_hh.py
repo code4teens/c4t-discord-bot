@@ -47,13 +47,12 @@ async def assign_command(bot, message):
 
   await message.add_reaction(c.tick_emoji)
 
-async def attach_command(bot, message):
+async def attach_command(message):
   match = u.re_search(c.attach_regex, message.content)
 
   if match:
+    channel = message.channel_mentions[0]
     message_data = message.content.split(' ', 2)
-    channel_id = int(message_data[1][2:20])
-    channel = bot.get_channel(channel_id)
     description = message_data[2]
 
     if message.attachments:
@@ -73,13 +72,12 @@ async def attach_command(bot, message):
   else:
     await message.reply('`$attach [#channel] [description]`')
 
-async def devecho_command(bot, message):
+async def devecho_command(message):
   match = u.re_search(c.devecho_regex, message.content)
       
   if match:
+    channel = message.channel_mentions[0]
     message_data = message.content.split(' ', 2)
-    channel_id = int(message_data[1][2:20])
-    channel = bot.get_channel(channel_id)
     text = message_data[2]
 
     try:
@@ -125,14 +123,23 @@ async def adopt_command(message):
       bot_role = [role for role in member.roles if role.id in c.r_village_ids]
 
       if len(author_role) == 1 and len(bot_role) == 0:
-        await member.add_roles(author_role[0])
-        await message.reply(f'{member.mention} has been adopted into {author_role[0].mention}.')
+        key = f'{message.author.id}-adopt'
+
+        if key not in u.keys():
+          u.put_value(member.id, key)
+          reason = f'{message.author} adopted {member}.'
+
+          await member.add_roles(author_role[0], reason = reason)
+          await message.reply(f'{member.mention} has been adopted into {author_role[0].mention}.')
+
+        else:
+          await message.reply(f'You have already adopted a bot into {author_role[0].mention}.')
 
       else:
         await message.reply(f'You are not authorised to adopt {member.mention}.')
 
   else:
-    await message.reply('`$adopt [@bot]`')
+    await message.reply('`$adopt [@member]`')
 
 async def release_command(message):
   match = u.re_search(c.release_regex, message.content)
@@ -143,9 +150,12 @@ async def release_command(message):
     if member.bot:
       author_role = [role for role in message.author.roles if role.id in c.r_village_ids]
       bot_role = [role for role in member.roles if role.id in c.r_village_ids]
+      key = f'{message.author.id}-adopt'
     
-      if len(bot_role) == 1 and author_role == bot_role:
-        await member.remove_roles(bot_role[0])
+      if key in u.keys() and len(bot_role) == 1:
+        reason = f'{message.author} released {member}.'
+
+        await member.remove_roles(bot_role[0], reason = reason)
         await message.reply(f'{member.mention} has been released from {bot_role[0].mention}.')
 
       else:
@@ -153,46 +163,6 @@ async def release_command(message):
 
   else:
     await message.reply('`$release [@bot]`')
-
-async def joke_command(message):
-  try:
-    data = u.get_JSON('https://official-joke-api.appspot.com/random_joke')
-
-  except Exception as e:
-    print(f'ERROR: $joke: {e}')
-
-    await message.reply('Something weng wrong..')
-
-  else:
-    await message.reply(f'{data["setup"]}\n\n{data["punchline"]}')
-
-async def ip_command(message):
-  try:
-    data = u.get_JSON('https://api.ipify.org/?format=json')
-
-  except Exception as e:
-    print(f'ERROR: $ip: {e}')
-
-    await message.reply('Something weng wrong..')
-
-  else:
-    await message.reply(data['ip'])
-
-async def iplocation_command(message):
-  try:
-    data1 = u.get_JSON('https://api.ipify.org/?format=json')
-    ip = data1['ip']
-    data2 = u.get_JSON(f'https://ipinfo.io/{ip}/geo')
-    data3 = u.get_JSON(f'https://api.ip2country.info/ip?{ip}')
-
-  except Exception as e:
-    print(f'ERROR: $iplocation: {e}')
-
-    await message.reply('Something went wrong..')
-
-  else:
-    await message.reply(f'{data2["city"]}, {data2["region"]}, {data2["country"]}')
-    await message.add_reaction(data3['countryEmoji'])
 
 async def agree_coc_check(bot, payload):
   guild = bot.get_guild(payload.guild_id)
@@ -259,3 +229,43 @@ async def give_students_xp(message):
       u.put(level, lvl_key)
       u.put(xp, xp_key)
       u.put(now, last_key)
+
+async def joke_command(message):
+  try:
+    data = u.requests_get('https://official-joke-api.appspot.com/random_joke').json()
+
+  except Exception as e:
+    print(f'ERROR: $joke: {e}')
+
+    await message.reply('Something weng wrong..')
+
+  else:
+    await message.reply(f'{data["setup"]}\n\n{data["punchline"]}')
+
+async def ip_command(message):
+  try:
+    data = u.requests_get('https://api.ipify.org/?format=json').json()
+
+  except Exception as e:
+    print(f'ERROR: $ip: {e}')
+
+    await message.reply('Something weng wrong..')
+
+  else:
+    await message.reply(data['ip'])
+
+async def iplocation_command(message):
+  try:
+    data1 = u.get_JSON('https://api.ipify.org/?format=json')
+    ip = data1['ip']
+    data2 = u.get_JSON(f'https://ipinfo.io/{ip}/geo')
+    data3 = u.get_JSON(f'https://api.ip2country.info/ip?{ip}')
+
+  except Exception as e:
+    print(f'ERROR: $iplocation: {e}')
+
+    await message.reply('Something went wrong..')
+
+  else:
+    await message.reply(f'{data2["city"]}, {data2["region"]}, {data2["country"]}')
+    await message.add_reaction(data3['countryEmoji'])

@@ -121,3 +121,35 @@ rps_tie = [
   'We tied!',
   'Great minds think alike!'
 ]
+
+emojis = [
+  ":teddy_bear:",
+  ":heart_eyes:",
+  ":clap:",
+  ":pleading_face:",
+  ":smiling_face_with_3_hearts:",
+  ":woman_facepalming:",
+  ":laughing:",
+  ":smirk:",
+  ":eyes:",
+  ":woozy_face:",
+  ":exploding_head:",
+  ":neutral_face:",
+  ":partying_face:",
+  ":money_mouth:",
+  ":ghost:"
+]
+
+gifs = [
+  'https://media1.tenor.com/images/861409ba9b00e46a67f4f7be00cee2f7/tenor.gif?itemid=16992959',
+  'https://media1.tenor.com/images/a7ae94274d1bc120b1a59382ef5ac66b/tenor.gif?itemid=13418523',
+  'https://media1.tenor.com/images/24ac13447f9409d41c1aecb923aedf81/tenor.gif?itemid=5026057',
+  'https://media1.tenor.com/images/f6f02f22f3da8a85d8f600a947144b6d/tenor.gif?itemid=17202817',
+  'https://media1.tenor.com/images/0796f5445e9730634315351c86d00e99/tenor.gif?itemid=15323902',
+  'https://media1.tenor.com/images/ed628307910258f8d23796b7029faa19/tenor.gif?itemid=12251780',
+  'https://media1.tenor.com/images/1c7bc370dc6ac84cc79660eba1f4f2c7/tenor.gif?itemid=15443300',
+  'https://media1.tenor.com/images/119dd3797490c22e49cf42e5357fb719/tenor.gif?itemid=4869672',
+  'https://media1.tenor.com/images/5a85818cb17039f20e3c31ba87005b72/tenor.gif?itemid=17640265',
+  'https://media1.tenor.com/images/d3dac1b007907d196e3235d7fe251efe/tenor.gif?itemid=16999811',
+  'https://media1.tenor.com/images/58de9f3c43b92e5f4cacc57714fd9fa5/tenor.gif?itemid=16216173'
+]

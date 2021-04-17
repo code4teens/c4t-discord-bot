@@ -1,174 +1,203 @@
-import requests
-from bs4 import BeautifulSoup
-from replit import db
-import random
-import discord
+import constants as c
+import utilities as u
 
-def movie_command(word):
-    if word == '':
-      return ('Please enter a movie name.')
+import aiohttp
+import io
 
-    r = requests.get("https://www.imdb.com/find?q={}&s=tt&ttype=ft&ref_=fn_ft".format(word))
-    soup = BeautifulSoup(r.content, "html.parser")
-    result = soup.find("td",attrs={"class":"result_text"})
-    movie_link = result.a.get('href')
-    movie_name = result.a.text
+async def embed_emoji_command(discord, message):
+  embedVar = discord.Embed(title = "Emoji Function ON", description = "Randomly picking one emoji for you: ", 
+  color = 0x4b0082)
+  random_emoji = u.random_choice(c.emojis)
+  embedVar.add_field(name = f'{random_emoji}\n\n', value = "Do you like this emoji?", inline = False)
 
-    r = requests.get("https://www.imdb.com" + movie_link)
-    soup = BeautifulSoup(r.content, "html.parser")
-    parent = soup.find("div",attrs={"class":"credit_summary_item"})
-    director = parent.a.text
-    msg = "Movie Name: {} \nDirector: {}".format(movie_name, director)
-    return msg
+  await message.reply(embed = embedVar)
 
-def update_encoragements(encouraging_message):
-  if "encouragements" in db.keys():
-    encouragements = db["encouragements"]
-    encouragements.append(encouraging_message)
-    db["encouragements"] = encouragements
-  else:
-    db["encouragements"] = [encouraging_message]
-
-def delete_encouragement(index):
-  encouragements = db["encouragements"]
-  if len(encouragements) > index:
-    del encouragements[index]
-    db["encouragements"] = encouragements
-
-def add_encourage_command(msg):
-  encouraging_message = msg
-  update_encoragements(encouraging_message)
-  return 'New encouraging message added.'
-
-def list_encourage_command():
-  encouragements = []
-  if "encouragements" in db.keys():
-    encouragements = db["encouragements"].value
-    return encouragements
-
-def del_encourage_command(msg):
-  encouragements = []
-  if "encouragements" in db.keys():
-    index = int(msg)
-    delete_encouragement(index)
-    encouragements = db["encouragements"]
-    return 'Encouraging message deleted.'
-
-def del_list_command(msg):
-  encouragements = []
-  if "encouragements" in db.keys():
-    index = int(msg)
-    delete_encouragement(index)
-    encouragements = db["encouragements"].value
-    result = "Encouraging message deleted.\nUpdating the list:\n{}".format(encouragements)
-    return (result)
-
-emoji_list = [
-  ":teddy_bear:",
-  ":heart_eyes:",
-  ":clap:",
-  ":pleading_face:",
-  ":smiling_face_with_3_hearts:",
-  ":woman_facepalming:",
-  ":laughing:",
-  ":smirk:",
-  ":eyes:",
-  ":woozy_face:",
-  ":exploding_head:",
-  ":neutral_face:",
-  ":partying_face:",
-  ":money_mouth:",
-  ":ghost:",
-]
-
-def emoji_command():
-  random_emoji = random.choice(emoji_list)
-  return (random_emoji)
-
-
-def embed_emoji_command():
-  random_emoji = random.choice(emoji_list)
-
-  embedVar = discord.Embed(title="Emoji Function ON", description="Randomly picking one emoji for you: ", 
-  color=0x4b0082)
-
-  embedVar.add_field(name=random_emoji + "\n\n", value="Do you like this emoji?", inline=False)
-
-  return (embedVar)
-
-gif_list = [
-  'https://media1.tenor.com/images/861409ba9b00e46a67f4f7be00cee2f7/tenor.gif?itemid=16992959',
-  'https://media1.tenor.com/images/a7ae94274d1bc120b1a59382ef5ac66b/tenor.gif?itemid=13418523',
-  'https://media1.tenor.com/images/24ac13447f9409d41c1aecb923aedf81/tenor.gif?itemid=5026057',
-  'https://media1.tenor.com/images/f6f02f22f3da8a85d8f600a947144b6d/tenor.gif?itemid=17202817',
-  'https://media1.tenor.com/images/0796f5445e9730634315351c86d00e99/tenor.gif?itemid=15323902',
-  'https://media1.tenor.com/images/ed628307910258f8d23796b7029faa19/tenor.gif?itemid=12251780',
-  'https://media1.tenor.com/images/1c7bc370dc6ac84cc79660eba1f4f2c7/tenor.gif?itemid=15443300',
-  'https://media1.tenor.com/images/119dd3797490c22e49cf42e5357fb719/tenor.gif?itemid=4869672',
-  'https://media1.tenor.com/images/5a85818cb17039f20e3c31ba87005b72/tenor.gif?itemid=17640265',
-  'https://media1.tenor.com/images/d3dac1b007907d196e3235d7fe251efe/tenor.gif?itemid=16999811',
-  'https://media1.tenor.com/images/58de9f3c43b92e5f4cacc57714fd9fa5/tenor.gif?itemid=16216173'
-]
-
-def gif_command():
-  random_gif = random.choice(gif_list)
-
-  embedVar = discord.Embed(title="GIFs Function ON", description="Randomly picking one GIF for you: ", 
-  color=0xee82ee)
-  
+async def gif_command(discord, message):
+  embedVar = discord.Embed(title = "GIFs Function ON", description = "Randomly picking one GIF for you: ", 
+  color = 0xee82ee)
+  random_gif = u.random_choice(c.gifs)
   embedVar.set_image(url = random_gif)
 
-  return (embedVar)
+  await message.reply(embed = embedVar)
 
-available_react = ["happy", "sad", "love", "wow", "lol", "teddy"]
+async def img_command(discord, message):
+  async with aiohttp.ClientSession() as session:
+    async with session.get('https://i.pinimg.com/originals/3c/90/c6/3c90c6359c4f0b887f4fea7e67a1f982.jpg') as resp:
 
-def react_command(word):
-  if word.lower() == "happy":
-    return ("😄")
+      if resp.status == 200:
+        data = io.BytesIO(await resp.read())
 
-  elif word.lower() == "sad":
-    return ("☹️")
+        await message.channel.send(file = discord.File(data, 'photo.jpg'))
+        
+      else:
+        await message.channel.send('Could not download file...')
 
-  elif word.lower() == "love":
-    return ("🥰")
+#async def img_command_2(discord, message):
+#  url = 'https://i.pinimg.com/originals/3c/90/c6/3c90c6359c4f0b887f4fea7e67a1f982.jpg'
+#  content = u.requests_get(url).content
+#  open('photo.jpg', 'wb').write(content)
 
-  elif word.lower() == "wow":
-    return ("🤩")
+#  await message.channel.send(file = discord.File('photo.jpg'))
+
+async def react_command(discord, message):
+  msg = message.content[7:].lower()
+
+  if msg == "happy":
+    await message.add_reaction("😄")
+
+  elif msg == "sad":
+    await message.add_reaction("☹️")
+
+  elif msg == "love":
+    await message.add_reaction("🥰")
+
+  elif msg == "wow":
+    await message.add_reaction("🤩")
     
-  elif word.lower() == "lol":
-    return ("🤣")
+  elif msg == "lol":
+    await message.add_reaction("🤣")
 
-  elif word.lower() == "teddy":
-    return ("🧸")
+  elif msg == "teddy":
+    await message.add_reaction("🧸")
       
   else:
-    return ("⛔")
+    embedVar = discord.Embed(title = "**Command Error**",description = "Try: `%react [Available Options]`\n", color = 0xff0000)
+    embedVar.add_field(name = "Available Options: ", value = (
+      "1. happy\n"
+      "2. sad\n"
+      "3. love\n"
+      "4. wow\n"
+      "5. lol\n"
+      "6. teddy\n"
+     ), inline = False)
+      
+    await message.reply(embed = embedVar)
 
-def react_error():
-  embedVar = discord.Embed(title="**Command Error**",description="Try: `%react [Available Options]`\n" , color=0xff0000)
-    
-  embedVar.add_field(name="Available Options: ",
-   value="1. happy\n"
-        "2. sad\n"
-        "3. love\n"
-        "4. wow\n"
-        "5. lol\n"
-        "6. teddy\n", inline=False)
-    
-  return (embedVar)
+async def add_encourage_command(message):
+  encouraging_message = message.content[5:]
 
-def exchange_rate_command():
+  if encouraging_message:
+    key = 'encouragements'
+
+    if key in u.keys():
+      encouragements = u.get_value(key)
+      encouragements.append(encouraging_message)
+      u.put(encouragements, key)
+
+    else:
+      u.put([encouraging_message], key)
+
+    await message.reply('New encouraging message added.')
+
+  else:
+    await message.reply('Please insert a message.')
+
+async def list_encourage_command(message):
+  key = 'encouragements'
+
+  if key in u.keys():
+    encouragements = u.get_value(key).value
+
+    await message.reply(encouragements)
+
+  else:
+    await message.reply('No encouragements list available.')
+
+async def del_encourage_command(message):
+  msg = message.content[8:]
+
+  if msg:
+    key = 'encouragements'
+
+    if key in u.keys():
+      encouragements = u.get_value(key)
+      index = int(msg)
+
+      if index < len(encouragements):
+        del encouragements[index]
+        u.put(encouragements, key)
+
+        await message.reply('Encouraging message deleted.')
+        
+      else:
+        await message.reply('Unable to delete: Message does not exist.')
+  
+  else:
+    await message.reply('Please insert the index of message.')
+
+async def del_list_command(message):
+  msg = message.content[10:]
+
+  if msg:
+    key = 'encouragements'
+    
+    if key in u.keys():
+      encouragements = u.get_value(key).value
+      index = int(msg)
+
+      if index < len(encouragements):
+        del encouragements[index]
+        u.put(encouragements, key)
+        
+        await message.reply(f"Encouraging message deleted.\nUpdating the list:\n{encouragements}")
+
+      else:
+        await message.reply('Unable to delete: Message does not exist.')
+
+  else:
+    await message.reply('Please insert the index of message.')
+
+async def exchange_rate_command(message):
   url = 'https://mtradeasia.com/main/daily-exchange-rates/'
-  r = requests.get(url)
-  soup = BeautifulSoup(r.content, "html.parser")
+  content = u.requests_get(url).content
+  soup = u.beautiful_soup(content, "html.parser")
   #get currency name
-  parent = soup.find("td",attrs={"style":"line-height: 1;"})
-  child = parent.find("small", attrs={"class":"spansmall"})
+  parent = soup.find("td", attrs = {"style": "line-height: 1;"})
+  child = parent.find("small", attrs = {"class": "spansmall"})
   currency = child.br.next_sibling
   update_currency = " ".join(currency.split())
 
   #get currency rate
-  webuy = soup.find("td", attrs={"class":"text-center"}).text
+  webuy = soup.find("td", attrs = {"class": "text-center"}).text
   rate = " ".join(webuy.split())
-  msg = "Currency: {}\nExchange Rate (MYR): {}".format(update_currency, rate)
-  return msg
+  msg = f"Currency: {update_currency}\nExchange Rate (MYR): {rate}"
+  
+  await message.reply(msg)
+
+async def scrape_job(message):
+  url = 'https://malaysia.indeed.com/jobs?q=python&l='
+  text = u.requests_get(url).text
+  soup = u.beautiful_soup(text, 'html.parser')
+  job_name = soup.find('h2', class_ = 'title').a.text.replace("\n", '')
+  comp_name = soup.find('span', class_ = 'company').text.replace("\n", '')
+  location = soup.find('span', class_ = 'location accessible-contrast-color-location').text.replace("\n",'')
+
+  idict = {}
+  idict['Job name'] = job_name
+  idict['Company name'] = comp_name
+  idict['Location'] = location
+
+  await message.reply(idict)
+
+async def movie_command(message):
+  word = message.content[7:]
+
+  if word:
+    url = f"https://www.imdb.com/find?q={word}&s=tt&ttype=ft&ref_=fn_ft"
+    content = u.requests_get(url).content
+    soup = u.beautiful_soup(content, "html.parser")
+    result = soup.find("td" ,attrs = {"class": "result_text"})
+    movie_link = result.a.get('href')
+    movie_name = result.a.text
+
+    url_2 = f"https://www.imdb.com{movie_link}"
+    content_2 = u.requests_get(url_2).content
+    soup = u.beautiful_soup(content_2, "html.parser")
+    parent = soup.find("div", attrs = {"class": "credit_summary_item"})
+    director = parent.a.text
+    msg = f"Movie Name: {movie_name} \nDirector: {director}"
+
+    await message.reply(msg)
+
+  else:
+    await message.reply('Please enter a movie name.')

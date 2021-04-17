@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from flask import Flask
 from replit import db
 from threading import Thread
@@ -15,6 +16,9 @@ class CommandException(Exception):
 class ChannelException(Exception):
   pass
 
+def beautiful_soup(content, parser):
+  return BeautifulSoup(content, parser)
+
 app = Flask('')
 
 @app.route('/')
@@ -31,11 +35,7 @@ def get_value(key):
   return db[key]
 
 def del_value(key):
-  try:
-    del db[key]
-
-  except Exception as e:
-    print(f'ERROR: del_value({key}): {e}')
+  del db[key]
 
 def put(value, key):
   db[key] = value
@@ -73,11 +73,11 @@ def random_choice(obj):
 def re_search(regex, string):
   return re.search(regex, string)
 
-def get_JSON(URL):
+def requests_get(URL):
   r = requests.get(URL)
 
   if r.status_code == 200:
-    return r.json()
+    return r
 
   else: 
     raise Exception(r.status_code)

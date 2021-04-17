@@ -10,8 +10,8 @@ async def check_to_send(discord, bot, send_pdf_time_str):
         key = f'day{x}'
         
         if u.get_value(key) == now_date_str:
-          path = f'resources/{key}.pdf'
-          channel = bot.get_channel(c.c_imp_alerts_id)
+          path = f'resources/{key}.txt'
+          channel = bot.get_channel(c.c_dev_terminal_id)
 
           await channel.send(file = discord.File(path))
 
