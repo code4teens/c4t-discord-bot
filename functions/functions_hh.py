@@ -28,7 +28,7 @@ def channel_check(bot, message):
     raise u.ChannelException(f'Kindly utilise me at {dev_terminal_channel.mention} or {stu_ttb_channel.mention}.')
 
   if c.r_students_id in [role.id for role in message.author.roles] \
-  and message.channel.id != c.r_stu_ttb_id:
+  and message.channel.id != c.c_stu_ttb_id:
     raise u.ChannelException(f'Kindly utilise me at {stu_ttb_channel.mention}.')
 
 def command_check(message):
@@ -95,19 +95,25 @@ async def add_bot_command(bot, message):
   match = u.re_search(c.addbot_regex, message.content)
 
   if match:
-    link = message.content[8:]
-    bot_id = link[51:69]
+    link = message.content.split()[1]
+    bot_id = match.group(1)
     key = f'{bot_id}-add-bot'
+    permission = int(match.group(2))
 
-    if key not in u.keys():
-      channel = bot.get_channel(c.dev_log_id)
-      log_message = await channel.send(link)
-      u.put(log_message.id, key)
+    if permission == c.student_bots_permission:
 
-      await message.reply('The Devs will add your bot into the server soon.')
-        
+      if key not in u.keys():
+        channel = bot.get_channel(c.c_dev_log_id)
+        log_message = await channel.send(link)
+        u.put(log_message.id, key)
+
+        await message.reply('The Devs will add your bot into the server soon.')
+          
+      else:
+        await message.reply('You already submitted a request for this bot.')
+
     else:
-      await message.reply('You already submitted a request for this bot.')
+      await message.reply('You are granting your bot the wrong permissions. Kindly reconfigure and resend invitation link.')
 
   else:
     await message.reply('`$addbot [bot-invite-link]`')
@@ -117,26 +123,29 @@ async def adopt_command(message):
 
   if match:
     member = message.mentions[0]
+    key = f'{message.author.id}-adopt'
 
-    if member.bot:
-      author_role = [role for role in message.author.roles if role.id in c.r_village_ids]
-      bot_role = [role for role in member.roles if role.id in c.r_village_ids]
+    if key not in u.keys():
 
-      if len(author_role) == 1 and len(bot_role) == 0:
-        key = f'{message.author.id}-adopt'
+      if member.bot and member.id != c.u_dev_bot_id:
+        author_role = [role for role in message.author.roles if role.id in c.r_village_ids]
+        bot_role = [role for role in member.roles if role.id in c.r_village_ids]
 
-        if key not in u.keys():
-          u.put_value(member.id, key)
+        if len(author_role) == 1 and len(bot_role) == 0:
+          u.put(member.id, key)
           reason = f'{message.author} adopted {member}.'
 
           await member.add_roles(author_role[0], reason = reason)
-          await message.reply(f'{member.mention} has been adopted into {author_role[0].mention}.')
+          await message.reply(f'You adopted {member.mention}.')
 
         else:
-          await message.reply(f'You have already adopted a bot into {author_role[0].mention}.')
+          await message.reply(f'You are not authorised to adopt {member.mention}.')
 
       else:
-        await message.reply(f'You are not authorised to adopt {member.mention}.')
+        await message.reply(f'You cannot adopt {member.mention}.')
+
+    else:
+      await message.reply(f'You have already adopted a bot.')
 
   else:
     await message.reply('`$adopt [@member]`')
@@ -146,20 +155,29 @@ async def release_command(message):
 
   if match:
     member = message.mentions[0]
+    key = f'{message.author.id}-adopt'
 
-    if member.bot:
-      author_role = [role for role in message.author.roles if role.id in c.r_village_ids]
-      bot_role = [role for role in member.roles if role.id in c.r_village_ids]
-      key = f'{message.author.id}-adopt'
-    
-      if key in u.keys() and len(bot_role) == 1:
-        reason = f'{message.author} released {member}.'
+    if key in u.keys():
+      bot_id = u.get_value(key)
 
-        await member.remove_roles(bot_role[0], reason = reason)
-        await message.reply(f'{member.mention} has been released from {bot_role[0].mention}.')
+      if member.id == bot_id:
+        bot_role = [role for role in member.roles if role.id in c.r_village_ids]
+      
+        if len(bot_role) == 1:
+          u.del_value(key)
+          reason = f'{message.author} released {member}.'
+
+          await member.remove_roles(bot_role[0], reason = reason)
+          await message.reply(f'You released {member.mention} for adoption.')
+
+        else:
+          await message.reply('Something went wrong..')
 
       else:
-        await message.reply(f'You are not authorised to release {member.mention}.')
+        await message.reply('Unable to fulfill request.')
+
+    else:
+      await message.reply('You have yet to adopt a bot.')
 
   else:
     await message.reply('`$release [@bot]`')
@@ -189,7 +207,7 @@ async def bot_join_check(bot, member):
 
     try:
       message_id = int(u.get_value(key))
-    
+
     except Exception as e:
       print(f'ERROR: bot_join_check({member.name}: {member.id}): {e}')
 
@@ -204,7 +222,32 @@ async def bot_join_check(bot, member):
       welcome_channel = bot.get_channel(c.c_imp_introduction_id)
 
       await member.add_roles(role)
-      await welcome_channel.send(f'Welcome {member.mention}!')
+      await welcome_channel.send(f'Welcome {member.mention}! Your command prefix is [prefix].')
+
+async def user_remove_check(member):
+  if not member.bot:
+    lvl_key = f'{message.author.id}-stats-level'
+    xp_key = f'{message.author.id}-stats-xp'
+    last_key = f'{message.author.id}-stats-last'
+
+    try:
+      u.del_value(lvl_key)
+      u.del_value(xp_key)
+      u.del_value(last_key)
+
+    except Exception as e:
+      print(f'ERROR: user_remove_check({member.name}: {member.id}): {e}')
+
+async def bot_remove_check(member):
+  if member.bot:
+    key = f'{member.id}-add-bot'
+
+    try:
+      u.del_value(key)
+
+    except Exception as e:
+      print(f'ERROR: bot_remove_check({member.name}: {member.id}): {e}')
+
 
 async def give_students_xp(message):
   if c.r_students_id in [role.id for role in message.author.roles]:
@@ -237,7 +280,7 @@ async def joke_command(message):
   except Exception as e:
     print(f'ERROR: $joke: {e}')
 
-    await message.reply('Something weng wrong..')
+    await message.reply('Something went wrong..')
 
   else:
     await message.reply(f'{data["setup"]}\n\n{data["punchline"]}')
@@ -249,7 +292,7 @@ async def ip_command(message):
   except Exception as e:
     print(f'ERROR: $ip: {e}')
 
-    await message.reply('Something weng wrong..')
+    await message.reply('Something went wrong..')
 
   else:
     await message.reply(data['ip'])

@@ -16,11 +16,16 @@ async def on_ready():
   print(f'{bot.user.name} Bot is online!')
   #hh.print_keys()
 
-  await bb.send_projects(discord, bot, '2021-04-17 14:03')
+  await bb.send_projects(discord, bot, '2021-04-17 08:42')
 
 @bot.event
 async def on_member_join(member):
   await hh.bot_join_check(bot, member)
+
+@bot.event
+async def on_member_remove(member):
+  await hh.user_remove_check(member)
+  await hh.bot_remove_check(member)
 
 @bot.event
 async def on_message(message):
@@ -82,13 +87,16 @@ async def on_message(message):
       
       elif message.content.startswith('$say'):
         await message.delete()
-        await message.channel.send(message.content[5:])
+        await message.channel.send(message.content[4:])
 
       elif message.content in c.rps:
         await pp.rps(message)
 
       elif message.content == '$emoji':
         await message.reply(u.random_choice(c.emojis))
+      
+      elif message.content == '$test':
+        await message.reply(c.pikachu)
 
       elif message.content == '$embed_emoji':
         await bc.embed_emoji_command(discord, message)

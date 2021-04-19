@@ -2,6 +2,7 @@ import os
 
 token = os.getenv('TOKEN')
 guild_id = int(os.getenv('GUILD'))
+u_dev_bot_id = int(os.getenv('USER_DEV_BOT'))
 r_devs_id = int(os.getenv('ROLE_DEVS'))
 r_students_id = int(os.getenv('ROLE_STUDENTS'))
 r_student_bots_id = int(os.getenv('ROLE_STUDENT_BOTS'))
@@ -18,6 +19,8 @@ c_imp_introduction_id = int(os.getenv('CHANNEL_IMP_INTRODUCTION'))
 c_stu_chit_chat_id = int(os.getenv('CHANNEL_STU_CHIT_CHAT'))
 c_stu_ttb_id = int(os.getenv('CHANNEL_STU_TTB'))
 
+student_bots_permission = 257088
+
 #\U0001F197
 ok_emoji = '🆗'
 
@@ -29,7 +32,7 @@ cross_emoji = '❌'
 
 attach_regex = '\$attach <#[0-9]{18}> .+'
 devecho_regex = '\$devecho <#[0-9]{18}> .+'
-addbot_regex = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=[0-9]{18}&permissions=[0-9]+&scope=bot'
+addbot_regex = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})&permissions=([0-9]+)&scope=bot'
 adopt_regex = '\$adopt <@![0-9]{18}>'
 release_regex = '\$release <@![0-9]{18}>'
 
@@ -139,6 +142,8 @@ emojis = [
   ":money_mouth:",
   ":ghost:"
 ]
+
+pikachu = "<:kawaii_pikachu:833590617632276531>"
 
 gifs = [
   'https://media1.tenor.com/images/861409ba9b00e46a67f4f7be00cee2f7/tenor.gif?itemid=16992959',
