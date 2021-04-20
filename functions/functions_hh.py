@@ -5,19 +5,6 @@ def print_keys():
   for index, key in enumerate(u.keys()):
     print(f'{index}: {key}: {u.get_value(key)}')
 
-def get_role_members(bot, role_id):
-  guild = bot.get_guild(c.guild_id)
-
-  for role in guild.roles:
-    if role.id == role_id:
-      return role.members
-
-def student_chunks(bot, n):
-  members = get_role_members(bot, c.r_students_id)
-
-  for i in range(0, len(members), n):
-    yield members[i:i + n]
-
 def channel_check(bot, message):
   dev_terminal_channel = bot.get_channel(c.c_dev_terminal_id)
   stu_ttb_channel = bot.get_channel(c.c_stu_ttb_id)
@@ -36,16 +23,47 @@ def command_check(message):
   and (command := message.content.split()[0]) in c.dev_commands:
     raise u.CommandException(f'You are not authorised to use `{command}`!')
 
-async def assign_command(bot, message):
+def get_role_members(bot, role_id):
+  guild = bot.get_guild(c.guild_id)
+
+  for role in guild.roles:
+    if role.id == role_id:
+      return role.members
+
+def student_chunks(bot, n):
+  members = u.random_shuffle(get_role_members(bot, c.r_students_id))
+
+  for i in range(0, len(members), n):
+    yield members[i:i + n]
+
+def assign_peers(bot):
+  guild = bot.get_guild(c.guild_id)
+  role = guild.get_role(c.r_students_id)
+  str_list = [f'{role.mention}, below are the evaluation groups for today:']
+  chunks = list(reversed(list(student_chunks(bot, 2))))
+  i = 1
+
+  if len(chunks[0]) == 1 and len(chunks) > 1:
+    chunks[0].extend(chunks[1])
+    del chunks[1]
+
+  for members in chunks:
+    str_list.append(f'\n__Group {i}:__')
+    i += 1
+
+    for index, member in enumerate(members):
+      str_list.append(f'{index + 1}. {member.name}')
+
+  return '\n'.join(str_list)
+
+async def assign_villages(bot):
   guild = bot.get_guild(c.guild_id)
   chunks = student_chunks(bot, 5)
   roles = [guild.get_role(village_id) for village_id in c.r_village_ids]
-  
+
   for members in chunks:
     for index, member in enumerate(members):
       await member.add_roles(roles[index])
-
-  await message.add_reaction(c.tick_emoji)
 
 async def attach_command(message):
   match = u.re_search(c.attach_regex, message.content)

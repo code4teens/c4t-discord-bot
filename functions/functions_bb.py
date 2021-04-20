@@ -28,3 +28,33 @@ async def send_projects(discord, bot, day1_str):
   
   loop = u.asyncio_get_event_loop()
   loop.call_later(0, await check_to_send(discord, bot, send_pdf_time_str))
+
+async def check_schedule(discord, bot):
+  while True:
+    now_date_str, now_time_str = u.get_now()
+
+    if now_date_str in c.schedule.keys():
+      tasks = c.schedule[now_date_str]
+
+      for task in tasks:
+        time = task['time']
+        type = task['type']
+        payload = task['payload']
+        message = task['message']
+
+        if time == now_time_str:
+          channel = bot.get_channel(c.c_imp_alerts_id)
+
+          if type == u.Alert.MESSAGE:
+            await channel.send(message)
+
+          elif type == u.Alert.FILE:
+            await channel.send(message, file = discord.File(payload))
+
+          elif type == u.Alert.FUNCTION:
+            await channel.send(payload(bot))
+
+          elif type == u.Alert.COROUTINE:
+            await payload(bot)
+
+    await u.asyncio_sleep(60)

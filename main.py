@@ -16,7 +16,10 @@ async def on_ready():
   print(f'{bot.user.name} Bot is online!')
   #hh.print_keys()
 
-  await bb.send_projects(discord, bot, '2021-04-17 08:42')
+  #await bb.send_projects(discord, bot, '2021-04-17 08:42')
+
+  loop = u.asyncio_get_event_loop()
+  loop.call_later(0, await bb.check_schedule(discord, bot))
 
 @bot.event
 async def on_member_join(member):
@@ -48,9 +51,6 @@ async def on_message(message):
     else:
       if message.content == '$devhelp':
         await message.reply(c.dev_help_text)
-
-      elif message.content == '$assign':
-        await hh.assign_command(bot, message)
 
       elif message.content.startswith('$attach'):
         await hh.attach_command(message)

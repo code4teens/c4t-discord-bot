@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from enum import Enum
 from flask import Flask
 from replit import db
 from threading import Thread
@@ -15,6 +16,12 @@ class CommandException(Exception):
 
 class ChannelException(Exception):
   pass
+
+class Alert(Enum):
+  MESSAGE = 1
+  FILE = 2
+  FUNCTION = 3
+  COROUTINE = 4
 
 def beautiful_soup(content, parser):
   return BeautifulSoup(content, parser)
@@ -69,6 +76,11 @@ def get_delta_day(d):
 
 def random_choice(obj):
   return random.choice(obj)
+
+def random_shuffle(obj):
+  random.shuffle(obj)
+
+  return obj
 
 def re_search(regex, string):
   return re.search(regex, string)
