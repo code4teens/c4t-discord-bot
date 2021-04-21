@@ -1,10 +1,11 @@
-from functions import functions_bb as bb
-from functions import functions_bc as bc
-from functions import functions_hh as hh
-from functions import functions_pp as pp
 import discord
 import constants as c
 import utilities as u
+from functions import functions_main as m
+#from functions import functions_bb as bb
+from functions import functions_bc as bc
+from functions import functions_hh as hh
+from functions import functions_pp as pp
 
 intents = discord.Intents.default()
 intents.members = True
@@ -14,33 +15,31 @@ bot = discord.Client(intents = intents)
 @bot.event
 async def on_ready():
   print(f'{bot.user.name} Bot is online!')
-  #hh.print_keys()
+  #u.print_keys()
+  loop = u.asyncio_get_event_loop()
+  loop.call_later(0, await m.check_schedule(discord, bot))
 
   #await bb.send_projects(discord, bot, '2021-04-17 08:42')
 
-  loop = u.asyncio_get_event_loop()
-  loop.call_later(0, await bb.check_schedule(discord, bot))
-
 @bot.event
 async def on_member_join(member):
-  await hh.bot_join_check(bot, member)
+  await m.on_member_join(bot, member)
 
 @bot.event
 async def on_member_remove(member):
-  await hh.user_remove_check(member)
-  await hh.bot_remove_check(member)
+  await m.on_member_remove(member)
 
 @bot.event
 async def on_message(message):
   if message.author == bot.user:
     return
 
-  await hh.give_students_xp(message)
+  await m.give_students_xp(message)
   
   if message.content.startswith('$'):
     try:
-      hh.channel_check(bot, message)
-      hh.command_check(message)
+      m.channel_check(bot, message)
+      m.command_check(message)
 
     except u.ChannelException as e:
       await message.reply(e)
@@ -94,9 +93,6 @@ async def on_message(message):
 
       elif message.content == '$emoji':
         await message.reply(u.random_choice(c.emojis))
-      
-      elif message.content == '$test':
-        await message.reply(c.pikachu)
 
       elif message.content == '$embed_emoji':
         await bc.embed_emoji_command(discord, message)
@@ -147,7 +143,7 @@ async def on_message(message):
 
 @bot.event
 async def on_raw_reaction_add(payload):
-  await hh.agree_coc_check(bot, payload)
+  await m.on_ok_coc(bot, payload)
 
 u.keep_alive()
 bot.run(c.token)

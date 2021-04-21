@@ -1,30 +1,16 @@
-from bs4 import BeautifulSoup
-from enum import Enum
-from flask import Flask
-from replit import db
-from threading import Thread
 import asyncio
 import datetime
 import pytz
 import random
 import re
 import requests
+import string
 import time
-
-class CommandException(Exception):
-  pass
-
-class ChannelException(Exception):
-  pass
-
-class Alert(Enum):
-  MESSAGE = 1
-  FILE = 2
-  FUNCTION = 3
-  COROUTINE = 4
-
-def beautiful_soup(content, parser):
-  return BeautifulSoup(content, parser)
+from bs4 import BeautifulSoup
+from enum import Enum
+from flask import Flask
+from replit import db
+from threading import Thread
 
 app = Flask('')
 
@@ -34,6 +20,22 @@ def home():
 
 def run():
   app.run(host = '0.0.0.0', port = 8080)
+
+def keep_alive():
+  t = Thread(target = run)
+  t.start()
+
+class Alert(Enum):
+  MESSAGE = 1
+  FILE = 2
+  FUNCTION = 3
+  COROUTINE = 4
+
+class CommandException(Exception):
+  pass
+
+class ChannelException(Exception):
+  pass
 
 def keys():
   return db.keys()
@@ -47,9 +49,9 @@ def del_value(key):
 def put(value, key):
   db[key] = value
 
-def keep_alive():
-  t = Thread(target = run)
-  t.start()
+def print_keys():
+  for index, key in enumerate(keys()):
+    print(f'{index + 1}: {key}: {get_value(key)}')
 
 def asyncio_get_event_loop():
   return asyncio.get_event_loop()
@@ -96,3 +98,29 @@ def requests_get(URL):
 
 def get_epoch():
   return int(time.time())
+
+def beautiful_soup(content, parser):
+  return BeautifulSoup(content, parser)
+
+def get_random_prefix():
+  lower_alpha = string.ascii_lowercase
+  symbols = [
+    '~',
+    '!',
+    '%',
+    '&',
+    '?'
+  ]
+  key = 'prefixes'
+  taken_prefixes = get_value(key)
+
+  while True:
+    prefix_1 = random.choice(lower_alpha)
+    prefix_2 = random.choice(symbols)
+    prefix = prefix_1 + prefix_2
+
+    if prefix not in taken_prefixes:
+      taken_prefixes.append(prefix)
+      put(taken_prefixes, key)
+
+      return prefix

@@ -1,1 +1,1 @@
-This file contains assignments for Day 2.
+This file contains assignments for Day02.

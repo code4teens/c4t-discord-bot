@@ -1,70 +1,6 @@
 import constants as c
 import utilities as u
 
-def print_keys():
-  for index, key in enumerate(u.keys()):
-    print(f'{index}: {key}: {u.get_value(key)}')
-
-def channel_check(bot, message):
-  dev_terminal_channel = bot.get_channel(c.c_dev_terminal_id)
-  stu_ttb_channel = bot.get_channel(c.c_stu_ttb_id)
-
-  if c.r_devs_id in [role.id for role in message.author.roles] \
-  and message.channel.id != c.c_dev_terminal_id \
-  and message.channel.id != c.c_stu_ttb_id:
-    raise u.ChannelException(f'Kindly utilise me at {dev_terminal_channel.mention} or {stu_ttb_channel.mention}.')
-
-  if c.r_students_id in [role.id for role in message.author.roles] \
-  and message.channel.id != c.c_stu_ttb_id:
-    raise u.ChannelException(f'Kindly utilise me at {stu_ttb_channel.mention}.')
-
-def command_check(message):
-  if c.r_devs_id not in [role.id for role in message.author.roles] \
-  and (command := message.content.split()[0]) in c.dev_commands:
-    raise u.CommandException(f'You are not authorised to use `{command}`!')
-
-def get_role_members(bot, role_id):
-  guild = bot.get_guild(c.guild_id)
-
-  for role in guild.roles:
-    if role.id == role_id:
-      return role.members
-
-def student_chunks(bot, n):
-  members = u.random_shuffle(get_role_members(bot, c.r_students_id))
-
-  for i in range(0, len(members), n):
-    yield members[i:i + n]
-
-def assign_peers(bot):
-  guild = bot.get_guild(c.guild_id)
-  role = guild.get_role(c.r_students_id)
-  str_list = [f'{role.mention}, below are the evaluation groups for today:']
-  chunks = list(reversed(list(student_chunks(bot, 2))))
-  i = 1
-
-  if len(chunks[0]) == 1 and len(chunks) > 1:
-    chunks[0].extend(chunks[1])
-    del chunks[1]
-
-  for members in chunks:
-    str_list.append(f'\n__Group {i}:__')
-    i += 1
-
-    for index, member in enumerate(members):
-      str_list.append(f'{index + 1}. {member.name}')
-
-  return '\n'.join(str_list)
-
-async def assign_villages(bot):
-  guild = bot.get_guild(c.guild_id)
-  chunks = student_chunks(bot, 5)
-  roles = [guild.get_role(village_id) for village_id in c.r_village_ids]
-
-  for members in chunks:
-    for index, member in enumerate(members):
-      await member.add_roles(roles[index])
-
 async def attach_command(message):
   match = u.re_search(c.attach_regex, message.content)
 
@@ -118,8 +54,7 @@ async def add_bot_command(bot, message):
     key = f'{bot_id}-add-bot'
     permission = int(match.group(2))
 
-    if permission == c.student_bots_permission:
-
+    if permission == c.p_student_bots:
       if key not in u.keys():
         channel = bot.get_channel(c.c_dev_log_id)
         log_message = await channel.send(link)
@@ -199,97 +134,6 @@ async def release_command(message):
 
   else:
     await message.reply('`$release [@bot]`')
-
-async def agree_coc_check(bot, payload):
-  guild = bot.get_guild(payload.guild_id)
-  channel = bot.get_channel(payload.channel_id)
-  member = guild.get_member(payload.user_id)
-  emoji = str(payload.emoji)
-
-  if guild.id == c.guild_id and channel.id == c.c_imp_coc_id and len(member.roles) == 1 and emoji == c.ok_emoji:
-    u.put(0, f'{member.id}-stats-level')
-    u.put(0, f'{member.id}-stats-xp')
-    u.put(0, f'{member.id}-stats-last')
-
-    role = guild.get_role(c.r_students_id)
-    reason = f'{member} agreed to Code of Conduct.'
-    welcome_channel = bot.get_channel(c.c_imp_introduction_id)
-    alerts_channel = bot.get_channel(c.c_imp_alerts_id)
-
-    await member.add_roles(role, reason = reason)
-    await welcome_channel.send(f'Welcome {member.mention}! Kindly check out {alerts_channel.mention}')
-
-async def bot_join_check(bot, member):
-  if member.bot:
-    key = f'{member.id}-add-bot'
-
-    try:
-      message_id = int(u.get_value(key))
-
-    except Exception as e:
-      print(f'ERROR: bot_join_check({member.name}: {member.id}): {e}')
-
-    else:
-      log_channel = bot.get_channel(c.c_dev_log_id)
-      message = await log_channel.fetch_message(message_id)
-      
-      await message.add_reaction(c.tick_emoji)
-
-    finally:
-      role = member.guild.get_role(c.r_student_bots_id)
-      welcome_channel = bot.get_channel(c.c_imp_introduction_id)
-
-      await member.add_roles(role)
-      await welcome_channel.send(f'Welcome {member.mention}! Your command prefix is [prefix].')
-
-async def user_remove_check(member):
-  if not member.bot:
-    lvl_key = f'{message.author.id}-stats-level'
-    xp_key = f'{message.author.id}-stats-xp'
-    last_key = f'{message.author.id}-stats-last'
-
-    try:
-      u.del_value(lvl_key)
-      u.del_value(xp_key)
-      u.del_value(last_key)
-
-    except Exception as e:
-      print(f'ERROR: user_remove_check({member.name}: {member.id}): {e}')
-
-async def bot_remove_check(member):
-  if member.bot:
-    key = f'{member.id}-add-bot'
-
-    try:
-      u.del_value(key)
-
-    except Exception as e:
-      print(f'ERROR: bot_remove_check({member.name}: {member.id}): {e}')
-
-
-async def give_students_xp(message):
-  if c.r_students_id in [role.id for role in message.author.roles]:
-    lvl_key = f'{message.author.id}-stats-level'
-    xp_key = f'{message.author.id}-stats-xp'
-    last_key = f'{message.author.id}-stats-last'
-    level = u.get_value(lvl_key)
-    xp = u.get_value(xp_key)
-    last = u.get_value(last_key)
-    now = u.get_epoch()
-
-    if now - last > 3:
-      xp += 10
-      next_level_xp = 5 * level ** 2 + 50 * level + 100
-
-      if xp >= next_level_xp:
-        level += 1
-        xp -= next_level_xp
-        
-        await message.reply(f'You have been promoted to Level {level}!')
-
-      u.put(level, lvl_key)
-      u.put(xp, xp_key)
-      u.put(now, last_key)
 
 async def joke_command(message):
   try:
