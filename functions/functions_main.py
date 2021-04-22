@@ -15,22 +15,31 @@ def get_student_chunks(bot, n):
     yield members[i:i + n]
 
 def assign_peers(bot):
-  guild = bot.get_guild(c.guild_id)
-  role = guild.get_role(c.r_students_id)
-  strs = [f'{role.mention}, below are the evaluation groups for today:']
-  chunks = list(reversed(list(get_student_chunks(bot, 2))))
-  i = 1
+  students = get_role_members(bot, c.r_students_id)
+  members = u.random_shuffle(students)
+  i = 0
+  #strs = [f'{role.mention}, below are the evaluation groups for today:']
+  strs = [(
+    f'{role.mention}, below are your evaluation pairs for today:\n\n'
+    '`CODE: EVALUATOR   <   >   EVALUATEE`'
+  )]
 
-  if len(chunks[0]) == 1 and len(chunks) > 1:
-    chunks[0].extend(chunks[1])
-    del chunks[1]
+  key = 'code'
+  code = int(u.get_value(key)) + 1
 
-  for members in chunks:
-    strs.append(f'\n__Group {i}:__')
+  while i < len(members):
+    code_str = str(code).zfill(4)
+
+    if i == len(members) - 1:
+      strs.append(f'{code_str} : {members[i].name}   <   >   {members[0].name}')
+      break
+
+    strs.append(f'{code_str} : {members[i].name}   <   >   {members[i + 1].name}')
+
     i += 1
+    code += 1
 
-    for index, member in enumerate(members):
-      strs.append(f'{index + 1}. {member.name}')
+  u.put(code, key)
 
   return '\n'.join(strs)
 

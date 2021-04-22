@@ -5,7 +5,7 @@ Official Discord Bot written in Python, deployed on Replit.
 1. Remove Code4Teens Bot from previous server _(if any)_.
 2. Purge Replit database _(remove previous config)_.
 3. Create new Discord Server for next batch of students.
-4. Setup Replit database _(initialise `prefixes` to an empty list)_.
+4. Setup Replit database _(initialise `prefixes` to an empty list and `code` to 0)_.
 5. Replace Guild, Role, Channel & Message IDs in `constants.py` with IDs from new server.
 6. Initialise `schedule` in `constants.py` _(optional, but highly recommended)_.
 7. Update `resources/` if necessary.

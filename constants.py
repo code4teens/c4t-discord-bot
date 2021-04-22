@@ -182,6 +182,7 @@ schedule = {
     {'time': '09:00', 'type': u.Alert.COROUTINE, 'payload': m.assign_villages, 'message': f'TEST:\n<@&{r_students_id}>, you are now put into villages.'},
     {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
+
   ],
   #Day 4
   '2021-04-24': [
