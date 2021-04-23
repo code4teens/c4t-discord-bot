@@ -5,7 +5,6 @@ import random
 import re
 import requests
 import string
-import time
 from bs4 import BeautifulSoup
 from enum import Enum
 from flask import Flask
@@ -59,9 +58,9 @@ def asyncio_get_event_loop():
 async def asyncio_sleep(s):
   await asyncio.sleep(s)
 
-def get_now():
-  akl_tz = pytz.timezone('Asia/Kuala_Lumpur')
-  now = datetime.datetime.now(akl_tz)
+def get_now_str():
+  a_kl_tz = pytz.timezone('Asia/Kuala_Lumpur')
+  now = datetime.datetime.now(a_kl_tz)
   date_str = now.strftime('%Y-%m-%d')
   time_str = now.strftime('%H:%M')
 
@@ -95,9 +94,6 @@ def requests_get(URL):
 
   else: 
     raise Exception(r.status_code)
-
-def get_epoch():
-  return int(time.time())
 
 def beautiful_soup(content, parser):
   return BeautifulSoup(content, parser)

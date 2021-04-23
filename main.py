@@ -1,7 +1,7 @@
 import discord
 import constants as c
 import utilities as u
-from functions import functions_main as m
+from functions import core
 #from functions import functions_bb as bb
 from functions import functions_bc as bc
 from functions import functions_hh as hh
@@ -15,31 +15,31 @@ bot = discord.Client(intents = intents)
 @bot.event
 async def on_ready():
   print(f'{bot.user.name} Bot is online!')
-  #u.print_keys()
+  u.print_keys()
   loop = u.asyncio_get_event_loop()
-  loop.call_later(0, await m.check_schedule(discord, bot))
+  loop.call_later(0, await core.check_schedule(discord, bot))
 
   #await bb.send_projects(discord, bot, '2021-04-17 08:42')
 
 @bot.event
 async def on_member_join(member):
-  await m.on_member_join(bot, member)
+  await core.on_member_join(bot, member)
 
 @bot.event
 async def on_member_remove(member):
-  await m.on_member_remove(member)
+  await core.on_member_remove(bot, member)
 
 @bot.event
 async def on_message(message):
   if message.author == bot.user:
     return
 
-  await m.give_students_xp(message)
+  await core.give_students_xp(bot, message)
   
   if message.content.startswith('$'):
     try:
-      m.channel_check(bot, message)
-      m.command_check(message)
+      core.channel_check(bot, message)
+      core.command_check(bot, message)
 
     except u.ChannelException as e:
       await message.reply(e)
@@ -143,7 +143,7 @@ async def on_message(message):
 
 @bot.event
 async def on_raw_reaction_add(payload):
-  await m.on_ok_coc(bot, payload)
+  await core.on_ok_coc(bot, payload)
 
 u.keep_alive()
 bot.run(c.token)

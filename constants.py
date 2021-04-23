@@ -1,9 +1,9 @@
-from functions import functions_main as m
 import os
+
+from functions import core
 import utilities as u
 
 token = os.getenv('TOKEN')
-
 guild_id = 829896340363542529
 c_dev_terminal_id = 830044387982573578
 c_dev_log_id = 829896340363542532
@@ -39,6 +39,7 @@ attach_regex = '\$attach <#[0-9]{18}> .+'
 devecho_regex = '\$devecho <#[0-9]{18}> .+'
 addbot_regex = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})&permissions=([0-9]+)&scope=bot'
 adopt_regex = '\$adopt <@![0-9]{18}>'
+adopt_key_regex = '[0-9]{18}-adopt'
 release_regex = '\$release <@![0-9]{18}>'
 
 dev_help_text = (
@@ -166,53 +167,53 @@ schedule = {
   '2021-04-21': [
     {'time': '08:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, this is a reminder to join our very first Townhall Session, 9:00 am later at <#{c_stu_voice_id}>.'},
     {'time': '10:00', 'type': u.Alert.FILE, 'payload': 'resources/day1.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day01 assignment. All the best!'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
   ],
   #Day 2
   '2021-04-22': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day2.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day02 assignment. All the best!'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'},
     {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, this is a reminder to join our second Townhall Session, 7:00 pm later at <#{c_stu_voice_id}>.'}
   ],
   #Day 3
   '2021-04-23': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day3.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day03 assignment. All the best!'},
-    {'time': '09:00', 'type': u.Alert.COROUTINE, 'payload': m.assign_villages, 'message': f'TEST:\n<@&{r_students_id}>, you are now put into villages.'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '09:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_villages, 'message': f'TEST:\n<@&{r_students_id}>, you are now put into villages.'},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
 
   ],
   #Day 4
   '2021-04-24': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day4.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day04 assignment. All the best!'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'},
     {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, this is a reminder to join our third Townhall Session, 7:00 pm later at <#{c_stu_voice_id}>.'}
   ],
   #Day 5
   '2021-04-25': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day5.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day05 assignment. All the best!'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
   ],
   #Day 6
   '2021-04-26': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day6.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day06 assignment. All the best!'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
   ],
   #Day 7
   '2021-04-27': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day7.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day07 assignment. All the best!'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
   ],
   #Day 8
   '2021-04-28': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day8.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day08 assignment. All the best!'},
-    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': m.assign_peers, 'message': None},
+    {'time': '12:00', 'type': u.Alert.FUNCTION, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'TEST:\n<@&{r_students_id}>, upon conducting your evaluation(s), kindly submit below form before 11:59 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'},
     {'time': '19:00', 'type': u.Alert.FILE, 'payload': 'resources/day9.txt', 'message': f'TEST:\n<@&{r_students_id}>, this is your Day09 assignment. All the best!'}
   ],
