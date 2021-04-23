@@ -2,7 +2,6 @@ import discord
 import constants as c
 import utilities as u
 from functions import core
-#from functions import functions_bb as bb
 from functions import functions_bc as bc
 from functions import functions_hh as hh
 from functions import functions_pp as pp
@@ -15,11 +14,9 @@ bot = discord.Client(intents = intents)
 @bot.event
 async def on_ready():
   print(f'{bot.user.name} Bot is online!')
-  u.print_keys()
+  #u.print_keys()
   loop = u.asyncio_get_event_loop()
   loop.call_later(0, await core.check_schedule(discord, bot))
-
-  #await bb.send_projects(discord, bot, '2021-04-17 08:42')
 
 @bot.event
 async def on_member_join(member):
