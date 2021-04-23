@@ -26,6 +26,33 @@ def get_role(bot, role_id):
 def get_channel(bot, channel_id):
   return bot.get_channel(channel_id)
 
+async def give_students_xp(bot, message):
+  author = message.author
+  r_students = get_role(bot, c.r_students_id)
+
+  if r_students in author.roles:
+    lvl_key = f'{author.id}-stats-level'
+    xp_key = f'{author.id}-stats-xp'
+    l_key = f'{author.id}-stats-last'
+    level = u.get_value(lvl_key)
+    xp = u.get_value(xp_key)
+    last = u.get_value(l_key)
+    now = int(time.time())
+
+    if now - last > 3:
+      xp += 10
+      xp_next_level = 5 * level ** 2 + 50 * level + 100
+
+      if xp >= xp_next_level:
+        level += 1
+        xp -= xp_next_level
+        
+        await message.reply(f'You have been promoted to Level {level}!')
+
+      u.put(level, lvl_key)
+      u.put(xp, xp_key)
+      u.put(now, l_key)
+
 def assign_peers(bot):
   r_students = get_role(bot, c.r_students_id)
   students = r_students.members
@@ -68,32 +95,36 @@ async def assign_villages(bot):
     for i, student in enumerate(chunk):
       await student.add_roles(r_villages[i])
 
-async def give_students_xp(bot, message):
-  author = message.author
-  r_students = get_role(bot, c.r_students_id)
+async def check_schedule(discord, bot):
+  while True:
+    now_date_str, now_time_str = u.get_now_str()
 
-  if r_students in author.roles:
-    lvl_key = f'{author.id}-stats-level'
-    xp_key = f'{author.id}-stats-xp'
-    l_key = f'{author.id}-stats-last'
-    level = u.get_value(lvl_key)
-    xp = u.get_value(xp_key)
-    last = u.get_value(l_key)
-    now = int(time.time())
+    if now_date_str in c.schedule.keys():
+      tasks = c.schedule[now_date_str]
 
-    if now - last > 3:
-      xp += 10
-      xp_next_level = 5 * level ** 2 + 50 * level + 100
+      for task in tasks:
+        time = task['time']
+        type = task['type']
+        payload = task['payload']
+        message = task['message']
 
-      if xp >= xp_next_level:
-        level += 1
-        xp -= xp_next_level
-        
-        await message.reply(f'You have been promoted to Level {level}!')
+        if time == now_time_str:
+          c_imp_alerts = get_channel(bot, c.c_imp_alerts_id)
 
-      u.put(level, lvl_key)
-      u.put(xp, xp_key)
-      u.put(now, l_key)
+          if type == u.Alert.MESSAGE:
+            await c_imp_alerts.send(message)
+
+          elif type == u.Alert.FILE:
+            await c_imp_alerts.send(message, file = discord.File(payload))
+
+          elif type == u.Alert.FUNCTION:
+            await c_imp_alerts.send(payload(bot))
+
+          elif type == u.Alert.COROUTINE:
+            await payload(bot)
+            await c_imp_alerts.send(message)
+
+    await asyncio.sleep(60)
 
 def channel_check(bot, message):
   roles = message.author.roles
@@ -116,36 +147,141 @@ def command_check(bot, message):
   if r_devs not in roles and command in c.dev_commands:
     raise u.CommandException(f'You are not authorised to use `{command}`!')
 
-async def check_schedule(discord, bot):
-  while True:
-    now_date_str, now_time_str = u.get_now_str()
+async def attach_command(message):
+  match = re.search(c.attach_regex, message.content)
 
-    if now_date_str in c.schedule.keys():
-      tasks = c.schedule[now_date_str]
+  if match:
+    channel = message.channel_mentions[0]
+    message_data = message.content.split(' ', 2)
+    description = message_data[2]
 
-      for task in tasks:
-        time = task['time']
-        type = task['type']
-        payload = task['payload']
-        message = task['message']
+    if message.attachments:
+      file = await message.attachments[0].to_file()
 
-        if time == now_time_str:
-          channel = get_channel(bot, c.c_imp_alerts_id)
+      try:
+        await channel.send(description, file = file)
 
-          if type == u.Alert.MESSAGE:
-            await channel.send(message)
+      except Exception as e:
+        print(f'ERROR: $attach: {e}')
 
-          elif type == u.Alert.FILE:
-            await channel.send(message, file = discord.File(payload))
+        await message.reply(f'I do not have write permissions in {channel.mention}.')
 
-          elif type == u.Alert.FUNCTION:
-            await channel.send(payload(bot))
+    else:
+      await message.reply('You forgot to include the attachment.')
 
-          elif type == u.Alert.COROUTINE:
-            await payload(bot)
-            await channel.send(message)
+  else:
+    await message.reply('`$attach [#channel] [description]`')
 
-    await asyncio.sleep(60)
+async def devecho_command(message):
+  match = re.search(c.devecho_regex, message.content)
+      
+  if match:
+    channel = message.channel_mentions[0]
+    message_data = message.content.split(' ', 2)
+    text = message_data[2]
+
+    try:
+      await channel.send(text)
+
+    except Exception as e:
+      print(f'ERROR: $devecho: {e}')
+
+      await message.reply(f'I do not have write permissions in {channel.mention}.')
+        
+  else:
+    await message.reply('`$devecho [#channel] [message]`')
+
+async def add_bot_command(bot, message):
+  match = re.search(c.addbot_regex, message.content)
+
+  if match:
+    link = message.content.split()[1]
+    bot_id = match.group(1)
+    key = f'{bot_id}-add-bot'
+    permission = int(match.group(2))
+
+    if permission == c.p_student_bots:
+      if key not in u.keys():
+        r_devs = get_role(bot, c.r_devs_id)
+        c_dev_log = get_channel(bot, c.c_dev_log_id)
+        log_message = await c_dev_log.send(link)
+        u.put(log_message.id, key)
+
+        await message.reply(f'The {r_devs.mention} will add your bot into the server soon.')
+          
+      else:
+        await message.reply('You already submitted a request for this bot.')
+
+    else:
+      await message.reply('You are granting your bot the wrong permissions. Kindly reconfigure and resend invitation link.')
+
+  else:
+    await message.reply('`$addbot [bot-invite-link]`')
+
+async def adopt_command(bot, message):
+  match = u.re_search(c.adopt_regex, message.content)
+
+  if match:
+    member = message.mentions[0]
+    key = f'{message.author.id}-adopt'
+
+    if key not in u.keys():
+      if member.bot and member.id != c.u_dev_bot_id:
+        r_villages = [get_role(bot, r_village_id) for r_village_id in c.r_village_ids]
+        author_roles = [role for role in message.author.roles if role in r_villages]
+        bot_roles = [role for role in member.roles if role in r_villages]
+
+        if len(author_roles) == 1 and len(bot_roles) == 0:
+          u.put(member.id, key)
+          reason = f'{message.author.name} adopted {member.name}.'
+
+          await member.add_roles(author_roles[0], reason = reason)
+          await message.reply(f'You adopted {member.mention}.')
+
+        else:
+          await message.reply(f'You are not authorised to adopt {member.mention}.')
+
+      else:
+        await message.reply(f'You cannot adopt {member.mention}.')
+
+    else:
+      await message.reply(f'You have already adopted a bot.')
+
+  else:
+    await message.reply('`$adopt [@member]`')
+
+async def release_command(bot, message):
+  match = u.re_search(c.release_regex, message.content)
+
+  if match:
+    member = message.mentions[0]
+    key = f'{message.author.id}-adopt'
+
+    if key in u.keys():
+      bot_id = u.get_value(key)
+
+      if member.id == bot_id:
+        r_villages = [get_role(bot, r_village_id) for r_village_id in c.r_village_ids]
+        bot_roles = [role for role in member.roles if role in r_villages]
+      
+        if len(bot_roles) == 1:
+          u.del_value(key)
+          reason = f'{message.author.name} released {member.name}.'
+
+          await member.remove_roles(bot_roles[0], reason = reason)
+          await message.reply(f'You released {member.mention} for adoption.')
+
+        else:
+          await message.reply('Something went wrong..')
+
+      else:
+        await message.reply('Unable to fulfill request.')
+
+    else:
+      await message.reply('You have yet to adopt a bot.')
+
+  else:
+    await message.reply('`$release [@bot]`')
 
 async def on_member_join(bot, member):
   if member.bot:
@@ -210,9 +346,11 @@ async def on_member_remove(bot, member):
 
       for role in adopted_bot.roles:
         if role in r_villages:
+          c_stu_ttb = get_channel(c.c_stu_ttb_id)
           reason = f'{member.name} left server.'
 
           await adopted_bot.remove_roles(role, reason = reason)
+          await c_stu_ttb.send(f'{adopted_bot.mention} is available for adoption.')
 
 async def on_ok_coc(bot, payload):
   member = get_member(bot, payload.user_id)

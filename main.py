@@ -3,7 +3,7 @@ import constants as c
 import utilities as u
 from functions import core
 from functions import functions_bc as bc
-from functions import functions_hh as hh
+from functions import hans as hh
 from functions import functions_pp as pp
 
 intents = discord.Intents.default()
@@ -61,10 +61,10 @@ async def on_message(message):
         await hh.add_bot_command(bot, message)
 
       elif message.content.startswith('$adopt'):
-        await hh.adopt_command(message)
+        await hh.adopt_command(bot, message)
 
       elif message.content.startswith('$release'):
-        await hh.release_command(message)
+        await hh.release_command(bot, message)
 
       elif message.content == '$joke':
         await hh.joke_command(message)
