@@ -1,22 +1,25 @@
-import constants as c
-import utilities as u
+import random
 
 import aiohttp
 import io
+from bs4 import BeautifulSoup
+
+import constants as c
+import utilities as u
 
 async def embed_emoji_command(discord, message):
-  embedVar = discord.Embed(title = "Emoji Function ON", description = "Randomly picking one emoji for you: ", 
+  embedVar = discord.Embed(title = "Emoji Function ON", description = "Sending emoji: ", 
   color = 0x4b0082)
-  random_emoji = u.random_choice(c.emojis)
-  embedVar.add_field(name = f'{random_emoji}\n\n', value = "Do you like this emoji?", inline = False)
+  emoji = random.choice(c.emojis)
+  embedVar.add_field(name = f'{emoji}\n\n', value = "--- Successful ---", inline = False)
 
   await message.reply(embed = embedVar)
 
 async def gif_command(discord, message):
-  embedVar = discord.Embed(title = "GIFs Function ON", description = "Randomly picking one GIF for you: ", 
+  embedVar = discord.Embed(title = "GIFs Function ON", description = "Sending GIF: ", 
   color = 0xee82ee)
-  random_gif = u.random_choice(c.gifs)
-  embedVar.set_image(url = random_gif)
+  gif = random.choice(c.gifs)
+  embedVar.set_image(url = gif)
 
   await message.reply(embed = embedVar)
 
@@ -61,7 +64,7 @@ async def react_command(discord, message):
     await message.add_reaction("🧸")
       
   else:
-    embedVar = discord.Embed(title = "**Command Error**",description = "Try: `%react [Available Options]`\n", color = 0xff0000)
+    embedVar = discord.Embed(title = "**Command Error**",description = "Try: `$react [Available Options]`\n", color = 0xff0000)
     embedVar.add_field(name = "Available Options: ", value = (
       "1. happy\n"
       "2. sad\n"
@@ -71,6 +74,7 @@ async def react_command(discord, message):
       "6. teddy\n"
      ), inline = False)
       
+    await message.add_reaction("✔️")
     await message.reply(embed = embedVar)
 
 async def add_encourage_command(message):
@@ -115,6 +119,7 @@ async def del_encourage_command(message):
 
       if index < len(encouragements):
         del encouragements[index]
+
         u.put(encouragements, key)
 
         await message.reply('Encouraging message deleted.')
@@ -137,6 +142,7 @@ async def del_list_command(message):
 
       if index < len(encouragements):
         del encouragements[index]
+
         u.put(encouragements, key)
         
         await message.reply(f"Encouraging message deleted.\nUpdating the list:\n{encouragements}")
@@ -147,10 +153,27 @@ async def del_list_command(message):
   else:
     await message.reply('Please insert the index of message.')
 
+async def scrape_name(message):
+  url = 'https://webscraper.io/test-sites/tables'
+  content = u.requests_get(url).content
+  soup = BeautifulSoup(content, "html.parser")
+  name1 = soup.tbody.tr.td.find_next("td")
+  firstname = name1.text
+  name2 = name1.find_next("td")
+  lastname = name2.text
+  name3 = name2.find_next("td")
+  username = name3.text
+
+  msg = f"First Name = {firstname} \nLast Name = {lastname} \nUsername = {username}"
+
+  await message.reply(msg)
+
+
 async def exchange_rate_command(message):
   url = 'https://mtradeasia.com/main/daily-exchange-rates/'
   content = u.requests_get(url).content
-  soup = u.beautiful_soup(content, "html.parser")
+  soup = BeautifulSoup(content, "html.parser")
+
   #get currency name
   parent = soup.find("td", attrs = {"style": "line-height: 1;"})
   child = parent.find("small", attrs = {"class": "spansmall"})
@@ -164,20 +187,30 @@ async def exchange_rate_command(message):
   
   await message.reply(msg)
 
-async def scrape_job(message):
-  url = 'https://malaysia.indeed.com/jobs?q=python&l='
-  text = u.requests_get(url).text
-  soup = u.beautiful_soup(text, 'html.parser')
-  job_name = soup.find('h2', class_ = 'title').a.text.replace("\n", '')
-  comp_name = soup.find('span', class_ = 'company').text.replace("\n", '')
-  location = soup.find('span', class_ = 'location accessible-contrast-color-location').text.replace("\n",'')
+async def scrape_job(discord,message):
+  url = u.requests_get('https://my.wobbjobs.com/jobs')
+  soup = BeautifulSoup(url.content, 'html.parser')
+  #jobs
+  for h in soup.find_all('h6'):
+    jobs = soup.find_all('h6', class_="mdc-typography--body1")
+    joblist = []
+    for jobnames in jobs:
+      joblist.append(jobnames.text)
 
-  idict = {}
-  idict['Job name'] = job_name
-  idict['Company name'] = comp_name
-  idict['Location'] = location
+  #company
+  for p in soup.find_all('p', class_="mdc-typography--body2"):
+    cname = soup.find_all('p', class_="mdc-typography--body2")
+    cname_list = []
+    for cnames in cname:
+      cname_list.append(cnames.text)
 
-  await message.reply(idict)
+
+  result = ["Job: " + x  + " , "+ "Company: " + y  for x, y in zip(joblist, cname_list)]
+  output = "\n\n".join(result)
+
+  embed_content= discord.Embed(title="Job List: ", description=output, color=14177041)
+
+  await message.reply(embed=embed_content)
 
 async def movie_command(message):
   word = message.content[7:]
@@ -185,14 +218,14 @@ async def movie_command(message):
   if word:
     url = f"https://www.imdb.com/find?q={word}&s=tt&ttype=ft&ref_=fn_ft"
     content = u.requests_get(url).content
-    soup = u.beautiful_soup(content, "html.parser")
+    soup = BeautifulSoup(content, "html.parser")
     result = soup.find("td" ,attrs = {"class": "result_text"})
     movie_link = result.a.get('href')
     movie_name = result.a.text
 
     url_2 = f"https://www.imdb.com{movie_link}"
     content_2 = u.requests_get(url_2).content
-    soup = u.beautiful_soup(content_2, "html.parser")
+    soup = BeautifulSoup(content_2, "html.parser")
     parent = soup.find("div", attrs = {"class": "credit_summary_item"})
     director = parent.a.text
     msg = f"Movie Name: {movie_name} \nDirector: {director}"

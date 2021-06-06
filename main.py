@@ -1,12 +1,17 @@
+import random
+
+import asyncio
 import discord
+
 import constants as c
 import utilities as u
-from functions import core
-from functions import functions_bc as bc
+from functions import bohchu as bc
 from functions import hans as hh
-from functions import functions_pp as pp
+from functions import prag as pp
+from functions import core as core
 
 intents = discord.Intents.default()
+intents.guilds = True
 intents.members = True
 intents.reactions = True
 bot = discord.Client(intents = intents)
@@ -14,8 +19,9 @@ bot = discord.Client(intents = intents)
 @bot.event
 async def on_ready():
   print(f'{bot.user.name} Bot is online!')
-  #u.print_keys()
-  loop = u.asyncio_get_event_loop()
+  u.print_keys()
+
+  loop = asyncio.get_event_loop()
   loop.call_later(0, await core.check_schedule(discord, bot))
 
 @bot.event
@@ -49,28 +55,19 @@ async def on_message(message):
         await message.reply(c.dev_help_text)
 
       elif message.content.startswith('$attach'):
-        await hh.attach_command(message)
+        await core.attach_command(message)
 
       elif message.content.startswith('$devecho'):
-        await hh.devecho_command(message)
+        await core.devecho_command(message)
       
       elif message.content == '$help':
         await message.reply(c.help_text)
 
       elif message.content.startswith('$addbot'):
-        await hh.add_bot_command(bot, message)
-
-      elif message.content.startswith('$adopt'):
-        await hh.adopt_command(bot, message)
-
-      elif message.content.startswith('$release'):
-        await hh.release_command(bot, message)
+        await core.add_bot_command(bot, message)
 
       elif message.content == '$joke':
         await hh.joke_command(message)
-
-      elif message.content == '$modules':
-        await message.reply(c.modules_text)
 
       elif message.content.startswith('$hello'):
         await message.reply('Hello')
@@ -89,7 +86,7 @@ async def on_message(message):
         await pp.rps(message)
 
       elif message.content == '$emoji':
-        await message.reply(u.random_choice(c.emojis))
+        await message.reply(random.choice(c.emojis))
 
       elif message.content == '$embed_emoji':
         await bc.embed_emoji_command(discord, message)
@@ -120,11 +117,14 @@ async def on_message(message):
       elif message.content.startswith('$del_list'):
         await bc.del_list_command(message)
 
+      elif message.content == '$scrape':
+        await bc.scrape_name(message)
+
       elif message.content == '$currency':
         await bc.exchange_rate_command(message)
 
       elif message.content == '$job':
-        await bc.scrape_job(message)
+        await bc.scrape_job(discord,message)
 
       elif message.content.startswith('$movie'):
         await bc.movie_command(message)
@@ -135,12 +135,15 @@ async def on_message(message):
       elif message.content == '$iplocation':
         await hh.iplocation_command(message)
 
+      elif message.content == '$iplocation_2':
+        await hh.iplocation_2_command(message)
+
       else:
         await message.reply('I do not recognise that command.')
 
 @bot.event
 async def on_raw_reaction_add(payload):
-  await core.on_ok_coc(bot, payload)
+  await core.on_ok_coc(discord, bot, payload)
 
 u.keep_alive()
 bot.run(c.token)

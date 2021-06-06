@@ -37,19 +37,20 @@ $say         - d04 ex02
 $rock        - d04 ex04
 $paper       - d04 ex04
 $scissors    - d04 ex04
-$emoji       - d05 ex00
-$embed_emoji - d05 ex01
-$gif         - d05 ex02
-$intro       - d05 ex03
-$img         - d05 ex04
-$react       - d05 ex05
-$new         - d06 ex00
-$list        - d06 ex01
-$delete      - d06 ex02
-$del_list    - d06 ex03
-$currency    - d07 ex00
-$job         - d07 ex01
-$movie       - d07 ex02
-$ip          - d08 ex00
-$iplocation  - d08 ex01 & 02
+$emoji       - d05 ex01
+$embed_emoji - d05 ex02
+$gif         - d05 ex03
+$intro       - d05 ex04
+$img         - d05 ex05
+$react       - d05 ex06
+$new         - d06 ex01
+$list        - d06 ex02
+$delete      - d06 ex03
+$del_list    - d06 ex04
+$scrape      - d07 ex01
+$currency    - d07 ex02
+$job         - d07 ex03
+$movie       - d07 ex04
+$ip          - d08 ex01
+$iplocation  - d08 ex02 & 03
 ```

@@ -26,13 +26,27 @@ async def ip_command(message):
 
 async def iplocation_command(message):
   try:
-    data1 = u.get_JSON('https://api.ipify.org/?format=json')
+    data1 = u.requests_get('https://api.ipify.org/?format=json').json()
     ip = data1['ip']
-    data2 = u.get_JSON(f'https://ipinfo.io/{ip}/geo')
-    data3 = u.get_JSON(f'https://api.ip2country.info/ip?{ip}')
+    data2 = u.requests_get(f'https://ipinfo.io/{ip}/geo').json()
 
   except Exception as e:
     print(f'ERROR: $iplocation: {e}')
+
+    await message.reply('Something went wrong..')
+
+  else:
+    await message.reply(f'{data2["city"]}, {data2["region"]}, {data2["country"]}')
+
+async def iplocation_2_command(message):
+  try:
+    data1 = u.requests_get('https://api.ipify.org/?format=json').json()
+    ip = data1['ip']
+    data2 = u.requests_get(f'https://ipinfo.io/{ip}/geo').json()
+    data3 = u.requests_get(f'https://api.ip2country.info/ip?{ip}').json()
+
+  except Exception as e:
+    print(f'ERROR: $iplocation_2: {e}')
 
     await message.reply('Something went wrong..')
 

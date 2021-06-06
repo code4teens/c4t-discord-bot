@@ -23,6 +23,13 @@ def get_role(bot, role_id):
     if role.id == role_id:
       return role
 
+def get_category(bot, category_id):
+  guild = bot.get_guild(c.guild_id)
+
+  for category in guild.categories:
+    if category.id == category_id:
+      return category
+
 def get_channel(bot, channel_id):
   return bot.get_channel(channel_id)
 
@@ -33,10 +40,10 @@ async def give_students_xp(bot, message):
   if r_students in author.roles:
     lvl_key = f'{author.id}-stats-level'
     xp_key = f'{author.id}-stats-xp'
-    l_key = f'{author.id}-stats-last'
+    last_key = f'{author.id}-stats-last'
     level = u.get_value(lvl_key)
     xp = u.get_value(xp_key)
-    last = u.get_value(l_key)
+    last = u.get_value(last_key)
     now = int(time.time())
 
     if now - last > 3:
@@ -51,38 +58,76 @@ async def give_students_xp(bot, message):
 
       u.put(level, lvl_key)
       u.put(xp, xp_key)
-      u.put(now, l_key)
+      u.put(now, last_key)
 
-def assign_peers(bot):
+async def assign_peers(bot):
   r_students = get_role(bot, c.r_students_id)
   students = r_students.members
   random.shuffle(students)
   key = 'code'
-  code = int(u.get_value(key)) + 1
+  code = int(u.get_value(key))
   strs = [(
-    f'TEST:\n{r_students.mention}, below are your evaluation pairs for today:\n\n'
+    f'{r_students.mention}, below are your evaluation pairs for today:\n\n'
     '`CODE: EVALUATOR   <   >   EVALUATEE`'
   )]
 
   if len(students) > 1:
     for i in range(len(students)):
-      code_str = str(code).zfill(4)
-
       if i == len(students) - 1:
-        strs.append(f'{code_str} : {students[i].name}   <   >   {students[0].name}')
+        evaluatee = students[0]
 
-        break
+      else:
+        evaluatee = students[i + 1]
+      
+      channel_key = f'{evaluatee.id}-channel-id'
+      channel = get_channel(bot, channel_key)
+      evaluator_key = f'{evaluatee.id}-evaluator'
 
-      strs.append(f'{code_str} : {students[i].name}   <   >   {students[i + 1].name}')
-      code += 1
+      try:
+        prev_evaluator_id = int(u.get_value(evaluator_key))
+
+      except Exception as e:
+        print(f'ERROR: assign_peers(): {e}')
+
+      else:
+        prev_evaluator = get_member(bot, prev_evaluator_id)
+
+        await channel.set_permissions(prev_evaluator, overwrite = None)
+      
+      finally:
+        u.put(students[i].id, evaluator_key)
+        code_str = str(code).zfill(4)
+        strs.append(f'{code_str} : {students[i].name}   <   >   {evaluatee.name}')
+        code += 1
+
+        await channel.set_permissions(students[i], view_channel = True)
 
   elif len(students) == 1:
-    code_str = str(code).zfill(4)
-    strs.append(f'{code_str} : {students[0].name}   <   >   {students[0].name}')
+    channel_key = f'{students[0].id}-channel-id'
+    channel = get_channel(bot, channel_key)
+    evaluator_key = f'{students[0].id}-evaluator'
+
+    try:
+      prev_evaluator_id = int(u.get_value(evaluator_key))
+      u.del_value(evaluator_key)
+
+    except Exception as e:
+      print(f'ERROR: assign_peers(): {e}')
+
+    else:
+      prev_evaluator = get_member(bot, prev_evaluator_id)
+
+      await channel.set_permissions(prev_evaluator, overwrite=None)
+    
+    finally:
+      code_str = str(code).zfill(4)
+      strs.append(f'{code_str} : {students[0].name}   <   >   {students[0].name}')
+      code += 1
 
   u.put(code, key)
 
-  return '\n'.join(strs)
+  c_imp_alerts = get_channel(bot, c.c_imp_alerts_id)
+  await c_imp_alerts.send('\n'.join(strs))
 
 async def assign_villages(bot):
   r_villages = [get_role(bot, r_village_id) for r_village_id in c.r_village_ids]
@@ -117,12 +162,8 @@ async def check_schedule(discord, bot):
           elif type == u.Alert.FILE:
             await c_imp_alerts.send(message, file = discord.File(payload))
 
-          elif type == u.Alert.FUNCTION:
-            await c_imp_alerts.send(payload(bot))
-
           elif type == u.Alert.COROUTINE:
             await payload(bot)
-            await c_imp_alerts.send(message)
 
     await asyncio.sleep(60)
 
@@ -131,13 +172,13 @@ def channel_check(bot, message):
   r_devs = get_role(bot, c.r_devs_id)
   r_students = get_role(bot, c.r_students_id)
   c_dev_terminal = get_channel(bot, c.c_dev_terminal_id)
-  c_stu_ttb = get_channel(bot, c.c_stu_ttb_id)
+  c_bot_clockwork = get_channel(bot, c.c_bot_clockwork_id)
 
-  if r_devs in roles and message.channel != c_dev_terminal and message.channel != c_stu_ttb:
-    raise u.ChannelException(f'Kindly utilise me at {c_dev_terminal.mention} or {c_stu_ttb.mention}.')
+  if r_devs in roles and message.channel != c_dev_terminal and message.channel != c_bot_clockwork:
+    raise u.ChannelException(f'Kindly utilise me at {c_dev_terminal.mention} or {c_bot_clockwork.mention}.')
 
-  elif r_students in roles and message.channel != c_stu_ttb:
-    raise u.ChannelException(f'Kindly utilise me at {c_stu_ttb.mention}.')
+  elif r_students in roles and message.channel != c_bot_clockwork:
+    raise u.ChannelException(f'Kindly utilise me at {c_bot_clockwork.mention}.')
 
 def command_check(bot, message):
   command = message.content.split()[0]
@@ -197,15 +238,17 @@ async def add_bot_command(bot, message):
   if match:
     link = message.content.split()[1]
     bot_id = match.group(1)
-    key = f'{bot_id}-add-bot'
+    message_key = f'{bot_id}-add-bot-message-id'
+    owner_key = f'{bot_id}-owner-id'
     permission = int(match.group(2))
 
-    if permission == c.p_student_bots:
-      if key not in u.keys():
+    if permission == c.p_add_student_bot_int:
+      if message_key not in u.keys():
         r_devs = get_role(bot, c.r_devs_id)
         c_dev_log = get_channel(bot, c.c_dev_log_id)
-        log_message = await c_dev_log.send(link)
-        u.put(log_message.id, key)
+        log_message = await c_dev_log.send(f'{r_devs.mention} {link}')
+        u.put(log_message.id, message_key)
+        u.put(message.author.id, owner_key)
 
         await message.reply(f'The {r_devs.mention} will add your bot into the server soon.')
           
@@ -213,82 +256,21 @@ async def add_bot_command(bot, message):
         await message.reply('You already submitted a request for this bot.')
 
     else:
-      await message.reply('You are granting your bot the wrong permissions. Kindly reconfigure and resend invitation link.')
+      await message.reply('You are granting your bot the wrong permissions. Kindly reconfigure and resubmit bot invitation link.')
 
   else:
     await message.reply('`$addbot [bot-invite-link]`')
 
-async def adopt_command(bot, message):
-  match = u.re_search(c.adopt_regex, message.content)
-
-  if match:
-    member = message.mentions[0]
-    key = f'{message.author.id}-adopt'
-
-    if key not in u.keys():
-      if member.bot and member.id != c.u_dev_bot_id:
-        r_villages = [get_role(bot, r_village_id) for r_village_id in c.r_village_ids]
-        author_roles = [role for role in message.author.roles if role in r_villages]
-        bot_roles = [role for role in member.roles if role in r_villages]
-
-        if len(author_roles) == 1 and len(bot_roles) == 0:
-          u.put(member.id, key)
-          reason = f'{message.author.name} adopted {member.name}.'
-
-          await member.add_roles(author_roles[0], reason = reason)
-          await message.reply(f'You adopted {member.mention}.')
-
-        else:
-          await message.reply(f'You are not authorised to adopt {member.mention}.')
-
-      else:
-        await message.reply(f'You cannot adopt {member.mention}.')
-
-    else:
-      await message.reply(f'You have already adopted a bot.')
-
-  else:
-    await message.reply('`$adopt [@member]`')
-
-async def release_command(bot, message):
-  match = u.re_search(c.release_regex, message.content)
-
-  if match:
-    member = message.mentions[0]
-    key = f'{message.author.id}-adopt'
-
-    if key in u.keys():
-      bot_id = u.get_value(key)
-
-      if member.id == bot_id:
-        r_villages = [get_role(bot, r_village_id) for r_village_id in c.r_village_ids]
-        bot_roles = [role for role in member.roles if role in r_villages]
-      
-        if len(bot_roles) == 1:
-          u.del_value(key)
-          reason = f'{message.author.name} released {member.name}.'
-
-          await member.remove_roles(bot_roles[0], reason = reason)
-          await message.reply(f'You released {member.mention} for adoption.')
-
-        else:
-          await message.reply('Something went wrong..')
-
-      else:
-        await message.reply('Unable to fulfill request.')
-
-    else:
-      await message.reply('You have yet to adopt a bot.')
-
-  else:
-    await message.reply('`$release [@bot]`')
-
 async def on_member_join(bot, member):
   if member.bot:
-    key = f'{member.id}-add-bot'
+    message_key = f'{member.id}-add-bot-message-id'
+    owner_key = f'{member.id}-owner-id'
 
     try:
-      message_id = int(u.get_value(key))
+      message_id = int(u.get_value(message_key))
+      owner_id = int(u.get_value(owner_key))
+      channel_key = f'{owner_id}-channel-id'
+      channel_id = int(u.get_value(channel_key))
 
     except Exception as e:
       print(f'ERROR: on_member_join({member.name}, {member.id}): {e}')
@@ -299,73 +281,73 @@ async def on_member_join(bot, member):
 
       await message.add_reaction(c.tick_emoji)
 
+      channel = get_channel(bot, channel_id)
+
+      await channel.set_permissions(member, view_channel = True)
+
     finally:
       r_student_bots = get_role(bot, c.r_student_bots_id)
-      c_imp_introduction = get_channel(bot, c.c_imp_introduction_id)
-      prefix = u.get_random_prefix()
+      c_stu_chit_chat = get_channel(bot, c.c_stu_chit_chat_id)
+      owner = get_member(bot, owner_id)
 
       await member.add_roles(r_student_bots)
-      await c_imp_introduction.send(f'Welcome {member.mention}! Your command prefix is `{prefix}`.')
+      await c_stu_chit_chat.send(f'Welcome {owner.mention}\'s bot, {member.mention}!')
 
 async def on_member_remove(bot, member):
   if member.bot:
-    a_key = f'{member.id}-add-bot'
-
-    for key in u.keys():
-        match = re.search(c.adopt_key_regex, key)
-
-        if match:
-          if int(u.get_value(key)) == member.id:
-            u.del_value(key)
+    message_key = f'{member.id}-add-bot-message-id'
+    owner_key = f'{member.id}-owner-id'
 
     try:
-      u.del_value(a_key)
+      u.del_value(message_key)
+      u.del_value(owner_key)
 
     except Exception as e:
       print(f'ERROR: on_member_remove({member.name}, {member.id}): {e}')
 
   else:
+    channel_key = f'{member.id}-channel-id'
     lvl_key = f'{member.id}-stats-level'
     xp_key = f'{member.id}-stats-xp'
-    l_key = f'{member.id}-stats-last'
-    a_key = f'{member.id}-adopt'
+    last_key = f'{member.id}-stats-last'
 
     try:
-      bot_id = u.get_value(a_key)
+      u.del_value(channel_key)
       u.del_value(lvl_key)
       u.del_value(xp_key)
-      u.del_value(l_key)
-      u.del_value(a_key)
+      u.del_value(last_key)
 
     except Exception as e:
       print(f'ERROR: on_member_remove({member.name}, {member.id}): {e}')
-    
-    else:
-      adopted_bot = get_member(bot, bot_id)
-      r_villages = [get_role(bot, r_village_id) for r_village_id in c.r_village_ids]
 
-      for role in adopted_bot.roles:
-        if role in r_villages:
-          c_stu_ttb = get_channel(c.c_stu_ttb_id)
-          reason = f'{member.name} left server.'
-
-          await adopted_bot.remove_roles(role, reason = reason)
-          await c_stu_ttb.send(f'{adopted_bot.mention} is available for adoption.')
-
-async def on_ok_coc(bot, payload):
+async def on_ok_coc(discord, bot, payload):
   member = get_member(bot, payload.user_id)
-  event_type = payload.event_type
   emoji = str(payload.emoji)
 
-  if payload.message_id == c.m_coc_id and len(member.roles) == 1 and event_type == 'REACTION_ADD' and emoji == c.ok_emoji:
+  if member.id not in c.u_non_student_ids and payload.message_id == c.m_coc_id and len(member.roles) == 1 and payload.event_type == 'REACTION_ADD' and emoji == c.ok_emoji:
     u.put(0, f'{member.id}-stats-level')
     u.put(0, f'{member.id}-stats-xp')
     u.put(0, f'{member.id}-stats-last')
 
     r_students = get_role(bot, c.r_students_id)
-    reason = f'{member.name} agreed to Code of Conduct.'
-    c_imp_introduction = get_channel(bot, c.c_imp_introduction_id)
+
+    await member.add_roles(r_students)
+
+    c_stu_chit_chat = get_channel(bot, c.c_stu_chit_chat_id)
     c_imp_alerts = get_channel(bot, c.c_imp_alerts_id)
 
-    await member.add_roles(r_students, reason = reason)
-    await c_imp_introduction.send(f'Welcome {member.mention}! Kindly check out {c_imp_alerts.mention}.')
+    await c_stu_chit_chat.send(f'Welcome {member.mention}! Kindly check out {c_imp_alerts.mention}.')
+
+    guild = bot.get_guild(c.guild_id)
+    r_dev_bot = get_role(bot, c.r_dev_bot_id)
+    r_bocals = get_role(bot, c.r_bocals_id)
+    overwrites = {
+      guild.default_role: discord.PermissionOverwrite(view_channel=False),
+      r_dev_bot: discord.PermissionOverwrite(view_channel = True),
+      r_bocals: discord.PermissionOverwrite(view_channel = True, manage_channels = False),
+      member: discord.PermissionOverwrite(view_channel = True)
+    }
+    cat_bot = get_category(bot, c.cat_bot_id)
+    channel = await cat_bot.create_text_channel(member.name, overwrites = overwrites, topic = f'Use this channel for your evaluations!')
+    channel_key = f'{member.id}-channel-id'
+    u.put(channel.id, channel_key)
