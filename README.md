@@ -2,24 +2,23 @@
 Official Discord Bot written in Python, deployed on Replit.
 
 ## Setup
-1. Remove Code4Teens Bot from previous server _(if any)_.
+1. Remove Clockwork from previous server _(if any)_.
 2. Purge Replit database _(remove previous config)_.
 3. Create new Discord Server for next batch of students.
-4. Add Admins & Code4Teens Bot to corresponding roles.
-5. Setup Replit database _(initialise `code` to 0)_.
-6. Replace Guild, Role, Channel & Message IDs in `constants.py` with IDs from new server.
-7. Initialise `schedule` in `constants.py` _(optional, but highly recommended)_.
-8. Update `resources/` if necessary.
-9. Run Replit.
-10. Add Code4Teens Bot into new server.
+4. Setup Replit database _(initialise `code` to 0)_.
+5. Replace Guild, Role, Channel & Message IDs in `constants.py` with IDs from new server.
+6. Initialise `schedule` in `constants.py`.
+7. Update `resources/` if necessary.
+8. Run Replit.
+9. Add Admins, BOCALs & Clockwork into new server with corresponding Roles.
 
 ## Commands
 
 ### Dev
 ```
-$devhelp - Shows this menu.
-$attach  - Sends attachment with description to specified channel.
-$devecho - Sends message to specified channel.
+$devhelp   - Shows this menu.
+$devattach - Sends attachment with description to specified channel.
+$devecho   - Sends message to specified channel.
 ```
 
 ### Student

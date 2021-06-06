@@ -3,58 +3,69 @@ import os
 from functions import core
 import utilities as u
 
+# bot token
 token = os.getenv('TOKEN')
-guild_id = 851007012816945153
+
+# guild
+gld_id = 851007012816945153
+
+# category
 cat_bot_id = 851007013625790484
-c_dev_terminal_id = 851007012829134862
-c_dev_log_id = 851007012829134863
-c_imp_alerts_id = 851007013269012503
-c_imp_coc_id = 851007013269012505
-c_imp_townhall_id = 851007013269012506
-c_stu_chit_chat_id = 851007013269012508
-c_bot_clockwork_id = 851007013625790485
-m_coc_id = 851012232502444062
-r_devs_id = 851007012829134858
-r_dev_bot_id = 851007012816945162
-r_bocals_id = 851007012816945161
-r_students_id = 851007012816945160
-r_student_bots_id = 851007012816945159
-r_village1_id = 851007012816945158
-r_village2_id = 851007012816945157
-r_village3_id = 851007012816945156
-r_village4_id = 851007012816945155
-r_village5_id = 851007012816945154
 
-u_dev_bot_id = 826063626682368031
-u_bohchu_id = 808949871281176596
-u_bunyod_id = 237063450646282241
-u_hans_id = 160369095965933568
-u_prag_id = 266934788420534272
-u_yilin_id = 801811150320828427
-u_jeff_id = 800981368825315329
-u_lynn_id = 257887843139977216
-u_thila_id = 801602510778662922
-u_tzeryee_id = 808223777073790986
-p_add_student_bot_int = 257088
+# channels
+chn_terminal_id = 851007012829134862
+chn_log_id = 851007012829134863
+chn_alerts_id = 851007013269012503
+chn_townhall_id = 851007013269012506
+chn_chit_chat_id = 851007013269012508
+chn_clockwork_id = 851007013625790485
 
-#\U0001F197
-ok_emoji = '🆗'
+# message
+msg_coc = 851012232502444062
 
-#\U00002705
-tick_emoji = '✅'
+# roles
+rol_devs_id = 851007012829134858
+rol_dev_bot_id = 851007012816945162
+rol_bocals_id = 851007012816945161
+rol_students_id = 851007012816945160
+rol_student_bots_id = 851007012816945159
+rol_village1_id = 851007012816945158
+rol_village2_id = 851007012816945157
+rol_village3_id = 851007012816945156
+rol_village4_id = 851007012816945155
+rol_village5_id = 851007012816945154
 
-#\U0000274C
-cross_emoji = '❌'
+# users
+usr_bohchu_id = 808949871281176596
+usr_bunyod_id = 237063450646282241
+usr_hans_id = 160369095965933568
+usr_prag_id = 266934788420534272
+usr_yilin_id = 801811150320828427
+usr_jeff_id = 800981368825315329
+usr_lynn_id = 257887843139977216
+usr_thila_id = 801602510778662922
+usr_tzeryee_id = 808223777073790986
 
-daily_evaluation_form = 'https://forms.gle/68X2jz4CvivBAtYPA'
-attach_regex = '\$attach <#[0-9]{18}> .+'
-devecho_regex = '\$devecho <#[0-9]{18}> .+'
-addbot_regex = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})&permissions=([0-9]+)&scope=bot'
+# permission
+prm_add_student_bot_int = 257088
 
+# emojis
+emoji_ok = '🆗' # \U0001F197
+emoji_tick = '✅' # \U00002705
+
+# external link
+lnk_eval = 'https://forms.gle/68X2jz4CvivBAtYPA'
+
+# regex
+rgx_devattach = '\$devattach <#[0-9]{18}> .+'
+rgx_devecho = '\$devecho <#[0-9]{18}> .+'
+rgx_addbot = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})&permissions=([0-9]+)&scope=bot'
+
+# multiline strings
 dev_help_text = (
   '```fix\n'
   '$devhelp - Shows this menu.\n'
-  '$attach  - Sends attachment with description to specified channel.\n'
+  '$devattach  - Sends attachment with description to specified channel.\n'
   '$devecho - Sends message to specified channel.\n'
   '```'
 )
@@ -90,29 +101,30 @@ help_text = (
   '```'
 )
 
-u_non_student_ids = [
-  u_bohchu_id,
-  u_bunyod_id,
-  u_hans_id,
-  u_prag_id,
-  u_yilin_id,
-  u_jeff_id,
-  u_lynn_id,
-  u_thila_id,
-  u_tzeryee_id
+# lists
+rol_village_ids = [
+  rol_village1_id,
+  rol_village2_id,
+  rol_village3_id,
+  rol_village4_id,
+  rol_village5_id
 ]
 
-r_village_ids = [
-  r_village1_id,
-  r_village2_id,
-  r_village3_id,
-  r_village4_id,
-  r_village5_id
+usr_non_student_ids = [
+  usr_bohchu_id,
+  usr_bunyod_id,
+  usr_hans_id,
+  usr_prag_id,
+  usr_yilin_id,
+  usr_jeff_id,
+  usr_lynn_id,
+  usr_thila_id,
+  usr_tzeryee_id
 ]
 
 dev_commands = [
   '$devhelp',
-  '$attach',
+  '$devattach',
   '$devecho'
 ]
 
@@ -180,65 +192,63 @@ gifs = [
 ]
 
 schedule = {
-  #Day 1
+  # Day 1
   '2021-06-09': [
-    {'time': '08:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'Good Morning <@&{r_students_id}>, this is a reminder to join our very first Townhall Session, 9:00 am later at <#{c_imp_townhall_id}>.'},
-    {'time': '10:00', 'type': u.Alert.FILE, 'payload': 'resources/day1.txt', 'message': f'<@&{r_students_id}>, this is your Day01 assignment. All the best!'},
+    {'time': '08:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'Good Morning <@&{rol_students_id}>, this is a reminder to join our very first Townhall Session, 9:00 am later at <#{chn_townhall_id}>.'},
+    {'time': '10:00', 'type': u.Alert.FILE, 'payload': 'resources/day1.txt', 'message': f'<@&{rol_students_id}>, this is your Day01 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
   ],
-  #Day 2
+  # Day 2
   '2021-06-10': [
-    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day2.txt', 'message': f'Good Morning <@&{r_students_id}>, this is your Day02 assignment. All the best!'},
+    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day2.txt', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day02 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'},
-    {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, this is a reminder to join our second Townhall Session, 7:00 pm later at <#{c_imp_townhall_id}>.'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'},
+    {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, this is a reminder to join our second Townhall Session, 7:00 pm later at <#{chn_townhall_id}>.'}
   ],
-  #Day 3
+  # Day 3
   '2021-06-11': [
-    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day3.txt', 'message': f'Good Morning <@&{r_students_id}>, this is your Day03 assignment. All the best!'},
+    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day3.txt', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day03 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
 
   ],
-  #Day 4
+  # Day 4
   '2021-06-12': [
-    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day4.txt', 'message': f'Good Morning <@&{r_students_id}>, this is your Day04 assignment. All the best!'},
+    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day4.txt', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day04 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'},
-    {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, this is a reminder to join our third Townhall Session, 7:00 pm later at <#{c_imp_townhall_id}>.'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'},
+    {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, this is a reminder to join our third Townhall Session, 7:00 pm later at <#{chn_townhall_id}>.'}
   ],
-  #Day 5
+  # Day 5
   '2021-06-13': [
-    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day5.txt', 'message': f'Good Morning <@&{r_students_id}>, this is your Day05 assignment.'},
+    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day5.txt', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day05 assignment.'},
     {'time': '09:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_villages, 'message': None},
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day9.txt', 'message': f'Additionally, you are now put into groups for this assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
   ],
-  #Day 6
+  # Day 6
   '2021-06-14': [
-    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day6.txt', 'message': f'Good Morning <@&{r_students_id}>, this is your Day06 assignment. All the best!'},
+    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day6.txt', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day06 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
   ],
-  #Day 7
+  # Day 7
   '2021-06-15': [
-    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day7.txt', 'message': f'Good Morning <@&{r_students_id}>, this is your Day07 assignment. All the best!'},
+    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day7.txt', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day07 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
   ],
-  #Day 8
+  # Day 8
   '2021-06-16': [
-    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day8.txt', 'message': f'Good Morning <@&{r_students_id}>, this is your Day08 assignment. All the best!'},
+    {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day8.txt', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day08 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{daily_evaluation_form}'},
-    # move to another day
-    {'time': '19:00', 'type': u.Alert.FILE, 'payload': 'resources/day9.txt', 'message': f'<@&{r_students_id}>, this is your Day09 assignment. All the best!'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
   ],
-  #Day 9
+  # Day 9
   '2021-06-17': [
-    {'time': '16:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'Good Evening <@&{r_students_id}>, this is a reminder that your final evaluation will begin at 5:00 pm. The <@{r_devs_id}> will be contacting you shortly.'},
-    {'time': '18:30', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{r_students_id}>, this is a reminder to join our very last Townhall Session, 7:00 pm later at <#{c_imp_townhall_id}>.'}
+    {'time': '16:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'Good Evening <@&{rol_students_id}>, this is a reminder that your final evaluation will begin at 5:00 pm. The <@{rol_devs_id}> will be contacting you shortly.'},
+    {'time': '18:30', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, this is a reminder to join our very last Townhall Session, 7:00 pm later at <#{chn_townhall_id}>.'}
   ]
 }

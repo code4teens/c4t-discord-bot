@@ -11,9 +11,9 @@ from functions import prag as pp
 from functions import core as core
 
 intents = discord.Intents.default()
-intents.guilds = True
-intents.members = True
-intents.reactions = True
+intents.guilds = True # may be redundant
+intents.members = True # may be redundant
+intents.reactions = True # may be redundant
 bot = discord.Client(intents = intents)
 
 @bot.event
@@ -30,7 +30,7 @@ async def on_member_join(member):
 
 @bot.event
 async def on_member_remove(member):
-  await core.on_member_remove(bot, member)
+  await core.on_member_remove(member)
 
 @bot.event
 async def on_message(message):
@@ -54,8 +54,8 @@ async def on_message(message):
       if message.content == '$devhelp':
         await message.reply(c.dev_help_text)
 
-      elif message.content.startswith('$attach'):
-        await core.attach_command(message)
+      elif message.content.startswith('$devattach'):
+        await core.devattach_command(message)
 
       elif message.content.startswith('$devecho'):
         await core.devecho_command(message)

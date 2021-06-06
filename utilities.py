@@ -1,10 +1,11 @@
 import datetime
+from enum import Enum
+from threading import Thread
+
 import pytz
 import requests
-from enum import Enum
 from flask import Flask
 from replit import db
-from threading import Thread
 
 app = Flask('')
 
