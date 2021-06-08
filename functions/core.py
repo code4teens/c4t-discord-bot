@@ -155,6 +155,7 @@ async def check_schedule(discord, bot):
 
         if time == now_time_str:
           chn_alerts = get_channel(bot, c.chn_alerts_id)
+          chn_terminal = get_channel(bot, c.chn_terminal_id)
 
           if type == u.Alert.MESSAGE:
             await chn_alerts.send(message)
@@ -164,6 +165,9 @@ async def check_schedule(discord, bot):
 
           elif type == u.Alert.COROUTINE:
             await payload(bot)
+
+          elif type == u.Alert.TEST_FILE:
+            await chn_terminal.send(message, file = discord.File(payload))
 
     await asyncio.sleep(60)
 

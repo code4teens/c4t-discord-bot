@@ -24,6 +24,7 @@ class Alert(Enum):
   MESSAGE = 1
   FILE = 2
   COROUTINE = 3
+  TEST_FILE = 5
 
 class CommandException(Exception):
   pass
