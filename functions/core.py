@@ -329,7 +329,7 @@ async def on_ok_coc(discord, bot, payload):
   member = get_user(bot, payload.user_id)
   emoji = str(payload.emoji)
 
-  if member.id not in c.usr_non_student_ids and payload.message_id == c.m_coc_id and len(member.roles) == 1 and payload.event_type == 'REACTION_ADD' and emoji == c.emoji_ok:
+  if member.id not in c.usr_non_student_ids and payload.message_id == c.msg_coc and len(member.roles) == 1 and payload.event_type == 'REACTION_ADD' and emoji == c.emoji_ok:
     u.put(0, f'{member.id}-stats-level')
     u.put(0, f'{member.id}-stats-xp')
     u.put(0, f'{member.id}-stats-last')
