@@ -197,6 +197,7 @@ schedule = {
   '2021-06-08': [
     {'time': '15:19', 'type': u.Alert.TEST_FILE, 'payload': 'resources/day4.pdf', 'message': f'<@&{rol_students_id}>, this is your Day04 assignment. All the best!'}
   ],
+  # Day 1
   '2021-06-09': [
     {'time': '08:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'Good Morning <@&{rol_students_id}>, this is a reminder to join our very first Townhall Session, 9:00 am later at <#{chn_townhall_id}>.'},
     {'time': '10:00', 'type': u.Alert.FILE, 'payload': 'resources/day1.pdf', 'message': f'<@&{rol_students_id}>, this is your Day01 assignment. All the best!'},
