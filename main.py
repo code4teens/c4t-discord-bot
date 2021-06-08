@@ -1,4 +1,5 @@
 import random
+import traceback
 
 import asyncio
 import discord
@@ -144,6 +145,17 @@ async def on_message(message):
 @bot.event
 async def on_raw_reaction_add(payload):
   await core.on_ok_coc(discord, bot, payload)
+
+@bot.event
+async def on_error(event, *args, **kwargs):
+  err = traceback.format_exc()
+  print('--------ERROR--------')
+  print(err)
+  print('--------ERROR--------')
+
+  chn_error_log = core.get_channel(bot, c.chn_error_log_id)
+
+  await chn_error_log.send(f'```py\n{err}\n```')
 
 u.keep_alive()
 bot.run(c.token)
