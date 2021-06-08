@@ -360,3 +360,26 @@ async def on_ok_coc(discord, bot, payload):
     chn_eval = await cat_bot.create_text_channel(member.name, overwrites = overwrites, topic = f'Use this channel for your evaluations!')
     chn_eval_key = f'{member.id}-channel-id'
     u.put(chn_eval.id, chn_eval_key)
+
+async def override_on_ok_coc(discord, bot):
+  gld = bot.get_guild(c.gld_id)
+  rol_dev_bot = get_role(bot, c.rol_dev_bot_id)
+  rol_bocals = get_role(bot, c.rol_bocals_id)
+  cat_bot = get_category(bot, c.cat_bot_id)
+
+  ids = []
+  for id in ids:
+    member = get_user(bot, id)
+    u.put(0, f'{member.id}-stats-level')
+    u.put(0, f'{member.id}-stats-xp')
+    u.put(0, f'{member.id}-stats-last')
+
+    overwrites = {
+      gld.default_role: discord.PermissionOverwrite(view_channel = False),
+      rol_dev_bot: discord.PermissionOverwrite(view_channel = True),
+      rol_bocals: discord.PermissionOverwrite(view_channel = True, manage_channels = False),
+      member: discord.PermissionOverwrite(view_channel = True)
+    }
+    chn_eval = await cat_bot.create_text_channel(member.name, overwrites = overwrites, topic = f'Use this channel for your evaluations!')
+    chn_eval_key = f'{member.id}-channel-id'
+    u.put(chn_eval.id, chn_eval_key)
