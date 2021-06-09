@@ -78,36 +78,46 @@ async def assign_peers(bot):
 
       else:
         evaluatee = students[i + 1]
-      
+
       chn_eval_key = f'{evaluatee.id}-channel-id'
-      chn_eval = get_channel(bot, chn_eval_key)
-      evaluator_key = f'{evaluatee.id}-evaluator'
 
       try:
-        prev_evaluator_id = int(u.get_value(evaluator_key))
+        chn_eval_id = u.get_value(chn_eval_key)
 
       except Exception as e:
         print(f'ERROR: assign_peers(): {e}')
 
       else:
-        prev_evaluator = get_user(bot, prev_evaluator_id)
+        chn_eval = get_channel(bot, chn_eval_id)
 
-        await chn_eval.set_permissions(prev_evaluator, overwrite = None)
-      
-      finally:
+        await chn_eval.set_permissions(students[i], view_channel = True)
+
+        evaluator_key = f'{evaluatee.id}-evaluator'
         u.put(students[i].id, evaluator_key)
         code_str = str(code).zfill(4)
         strs.append(f'{code_str} : {students[i].name}   <   >   {evaluatee.name}')
         code += 1
 
-        await chn_eval.set_permissions(students[i], view_channel = True)
+        try:
+          prev_evaluator_id = int(u.get_value(evaluator_key))
+
+        except Exception as e:
+          print(f'ERROR: assign_peers(): {e}')
+
+        else:
+          prev_evaluator = get_user(bot, prev_evaluator_id)
+
+          await chn_eval.set_permissions(prev_evaluator, overwrite = None)
 
   elif len(students) == 1:
     chn_eval_key = f'{students[0].id}-channel-id'
-    chn_eval = get_channel(bot, chn_eval_key)
     evaluator_key = f'{students[0].id}-evaluator'
+    code_str = str(code).zfill(4)
+    strs.append(f'{code_str} : {students[0].name}   <   >   {students[0].name}')
+    code += 1
 
     try:
+      chn_eval_id = u.get_value(chn_eval_key)
       prev_evaluator_id = int(u.get_value(evaluator_key))
       u.del_value(evaluator_key)
 
@@ -115,14 +125,10 @@ async def assign_peers(bot):
       print(f'ERROR: assign_peers(): {e}')
 
     else:
+      chn_eval = get_channel(bot, chn_eval_id)
       prev_evaluator = get_user(bot, prev_evaluator_id)
 
       await chn_eval.set_permissions(prev_evaluator, overwrite = None)
-    
-    finally:
-      code_str = str(code).zfill(4)
-      strs.append(f'{code_str} : {students[0].name}   <   >   {students[0].name}')
-      code += 1
 
   u.put(code, key)
 
