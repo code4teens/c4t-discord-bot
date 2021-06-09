@@ -371,6 +371,59 @@ async def on_ok_coc(discord, bot, payload):
     chn_eval_key = f'{member.id}-channel-id'
     u.put(chn_eval.id, chn_eval_key)
 
+async def override_assign_peers(bot):
+  ids = [] # update when necessary
+  random.shuffle(ids)
+  students = [get_user(bot, id) for id in ids]
+
+  strs = ['`CODE: EVALUATOR   <   >   EVALUATEE`']
+  
+  key = 'code'
+  code = int(u.get_value(key))
+  
+  for i in range(len(students)):
+    if i == len(students) - 1:
+      evaluatee = students[0]
+
+    else:
+      evaluatee = students[i + 1]
+
+    chn_eval_key = f'{evaluatee.id}-channel-id'
+
+    try:
+      chn_eval_id = u.get_value(chn_eval_key)
+
+    except Exception as e:
+      print(f'ERROR: override_assign_peers(): {e}')
+
+    else:
+      chn_eval = get_channel(bot, chn_eval_id)
+
+      await chn_eval.set_permissions(students[i], view_channel = True)
+
+      evaluator_key = f'{evaluatee.id}-evaluator'
+
+      try:
+        prev_evaluator_id = int(u.get_value(evaluator_key))
+
+      except Exception as e:
+        print(f'ERROR: override_assign_peers(): {e}')
+
+      else:
+        prev_evaluator = get_user(bot, prev_evaluator_id)
+
+        await chn_eval.set_permissions(prev_evaluator, overwrite = None)
+
+      u.put(students[i].id, evaluator_key)
+      code_str = str(code).zfill(4)
+      strs.append(f'{code_str} : {students[i].name}   <   >   {evaluatee.name}')
+      code += 1
+
+  u.put(code, key)
+
+  chn_alerts = get_channel(bot, c.chn_alerts_id)
+  await chn_alerts.send('\n'.join(strs))
+
 async def override_on_ok_coc(discord, bot):
   gld = bot.get_guild(c.gld_id)
   rol_dev_bot = get_role(bot, c.rol_dev_bot_id)
@@ -378,7 +431,7 @@ async def override_on_ok_coc(discord, bot):
   rol_observer = get_role(bot, c.rol_observer_id)
   cat_bot = get_category(bot, c.cat_bot_id)
 
-  ids = []
+  ids = [] # update when necessary
   for id in ids:
     member = get_user(bot, id)
     u.put(0, f'{member.id}-stats-level')
