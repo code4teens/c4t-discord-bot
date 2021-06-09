@@ -358,10 +358,12 @@ async def on_ok_coc(discord, bot, payload):
     gld = bot.get_guild(c.gld_id)
     rol_dev_bot = get_role(bot, c.rol_dev_bot_id)
     rol_bocals = get_role(bot, c.rol_bocals_id)
+    rol_observer = get_role(bot, c.rol_observer_id)
     overwrites = {
       gld.default_role: discord.PermissionOverwrite(view_channel=False),
       rol_dev_bot: discord.PermissionOverwrite(view_channel = True),
-      rol_bocals: discord.PermissionOverwrite(view_channel = True, manage_channels = False),
+      rol_bocals: discord.PermissionOverwrite(view_channel = True),
+      rol_observer: discord.PermissionOverwrite(view_channel = True),
       member: discord.PermissionOverwrite(view_channel = True)
     }
     cat_bot = get_category(bot, c.cat_bot_id)
@@ -373,6 +375,7 @@ async def override_on_ok_coc(discord, bot):
   gld = bot.get_guild(c.gld_id)
   rol_dev_bot = get_role(bot, c.rol_dev_bot_id)
   rol_bocals = get_role(bot, c.rol_bocals_id)
+  rol_observer = get_role(bot, c.rol_observer_id)
   cat_bot = get_category(bot, c.cat_bot_id)
 
   ids = []
@@ -385,7 +388,8 @@ async def override_on_ok_coc(discord, bot):
     overwrites = {
       gld.default_role: discord.PermissionOverwrite(view_channel = False),
       rol_dev_bot: discord.PermissionOverwrite(view_channel = True),
-      rol_bocals: discord.PermissionOverwrite(view_channel = True, manage_channels = False),
+      rol_bocals: discord.PermissionOverwrite(view_channel = True),
+      rol_observer: discord.PermissionOverwrite(view_channel = True),
       member: discord.PermissionOverwrite(view_channel = True)
     }
     chn_eval = await cat_bot.create_text_channel(member.name, overwrites = overwrites, topic = f'Use this channel for your evaluations!')
