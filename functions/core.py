@@ -66,7 +66,7 @@ async def assign_peers(bot):
   random.shuffle(students)
   strs = [(
     f'{rol_students.mention}, below are your evaluation pairs for today:\n\n'
-    '`CODE: EVALUATOR   <   >   EVALUATEE`'
+    '`CODE: TESTER   <   >   CODER`'
   )]
   key = 'code'
   code = int(u.get_value(key))
@@ -376,7 +376,7 @@ async def override_assign_peers(bot):
   random.shuffle(ids)
   students = [get_user(bot, id) for id in ids]
 
-  strs = ['`CODE: EVALUATOR   <   >   EVALUATEE`']
+  strs = ['`CODE: TESTER   <   >   CODER`']
   
   key = 'code'
   code = int(u.get_value(key))

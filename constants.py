@@ -203,27 +203,27 @@ schedule = {
     {'time': '08:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'Good Morning <@&{rol_students_id}>, this is a reminder to join our very first Townhall Session, 9:00 am later at <#{chn_townhall_id}>.'},
     {'time': '10:00', 'type': u.Alert.FILE, 'payload': 'resources/day1.pdf', 'message': f'<@&{rol_students_id}>, this is your Day01 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'}
   ],
   # Day 2
   '2021-06-10': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day2.pdf', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day02 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'},
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'},
     {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, this is a reminder to join our second Townhall Session, 7:00 pm later at <#{chn_townhall_id}>.'}
   ],
   # Day 3
   '2021-06-11': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day3.pdf', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day03 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'}
 
   ],
   # Day 4
   '2021-06-12': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day4.pdf', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day04 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'},
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'},
     {'time': '18:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, this is a reminder to join our third Townhall Session, 7:00 pm later at <#{chn_townhall_id}>.'}
   ],
   # Day 5
@@ -232,25 +232,25 @@ schedule = {
     {'time': '09:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_villages, 'message': None},
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day9.pdf', 'message': f'Additionally, you are now put into groups for this assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'}
   ],
   # Day 6
   '2021-06-14': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day6.pdf', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day06 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'}
   ],
   # Day 7
   '2021-06-15': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day7.pdf', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day07 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'}
   ],
   # Day 8
   '2021-06-16': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day8.pdf', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day08 assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
-    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the evaluator AND evaluatee must fill out the form.\n\n{lnk_eval}'}
+    {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'}
   ],
   # Day 9
   '2021-06-17': [
