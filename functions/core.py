@@ -324,12 +324,14 @@ async def on_member_remove(member):
 
   else:
     chn_eval_key = f'{member.id}-channel-id'
+    evaluator_key = f'{member.id}-evaluator'
     lvl_key = f'{member.id}-stats-level'
     xp_key = f'{member.id}-stats-xp'
     last_key = f'{member.id}-stats-last'
 
     try:
       u.del_value(chn_eval_key)
+      u.del_value(evaluator_key)
       u.del_value(lvl_key)
       u.del_value(xp_key)
       u.del_value(last_key)
