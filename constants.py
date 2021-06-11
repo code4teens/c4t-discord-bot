@@ -61,7 +61,7 @@ lnk_eval = 'https://forms.gle/68X2jz4CvivBAtYPA'
 # regex
 rgx_devattach = '\$devattach <#[0-9]{18}> .+'
 rgx_devecho = '\$devecho <#[0-9]{18}> .+'
-rgx_devwatch = '\$devwatch <@[0-9]{18}>'
+rgx_devaddwatch = '\$devaddwatch <@![0-9]{18}>'
 rgx_addbot = '\$addbot https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})&permissions=([0-9]+)&scope=bot'
 
 # multiline strings
@@ -70,7 +70,7 @@ dev_help_text = (
   '$devhelp      - Shows this menu.\n'
   '$devattach    - Sends attachment with description to specified channel.\n'
   '$devecho      - Sends message to specified channel.\n'
-  '$devwatch     - Adds student to watchlist.\n'
+  '$devaddwatch  - Adds student to watchlist.\n'
   '$devwatchlist - Shows watchlist.\n'
   '```'
 )
@@ -131,7 +131,7 @@ dev_commands = [
   '$devhelp',
   '$devattach',
   '$devecho',
-  '$devwatch',
+  '$devaddwatch',
   '$devwatchlist'
 ]
 

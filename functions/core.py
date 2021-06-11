@@ -262,8 +262,8 @@ async def devecho_command(message):
   else:
     await message.reply('`$devecho [#channel] [message]`')
 
-async def devwatch_command(message):
-  match = re.search(c.rgx_devwatch, message.content)
+async def devaddwatch_command(message):
+  match = re.search(c.rgx_devaddwatch, message.content)
 
   if match:
     key = 'watchlist'
@@ -277,8 +277,10 @@ async def devwatch_command(message):
     else:
       u.put([id], key)
 
+    await message.channel.send('Student succesfully added to watchlist.')
+
   else:
-    await message.reply('`$devwatch [@member]`')
+    await message.reply('`$devaddwatch [@user]`')
 
 async def devwatchlist_command(bot, message):
   strs = [(
@@ -287,9 +289,13 @@ async def devwatchlist_command(bot, message):
   )]
 
   key = 'watchlist'
-  watchlist = u.get_value(key)
+  try:
+    watchlist = u.get_value(key)
 
-  if len(watchlist) != 0:
+  except Exception as e:
+    print(f'ERROR: devwatchlist_command(): {e}')
+
+  else:
     idx = 0
     
     for id in watchlist:
@@ -299,9 +305,6 @@ async def devwatchlist_command(bot, message):
       strs.append(f'{idx_str}: {student.name} -> {student.id}')
 
       idx += 1
-
-  else:
-    strs.append('No one in watchlist.')
 
   strs.append('```')
 
