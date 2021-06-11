@@ -62,80 +62,94 @@ async def give_students_xp(bot, message):
 
 async def assign_peers(bot):
   rol_students = get_role(bot, c.rol_students_id)
-  students = rol_students.members
-  random.shuffle(students)
+  all_students = rol_students.members
+  watchlist_key = 'watchlist'
+  watchlist = u.get_value(watchlist_key)
+  good = [student for student in all_students if student.id not in watchlist]
+  bad = [student for student in all_students if student.id in watchlist]
+
+  if len(bad) <= 1:
+    student_groups = [all_students]
+  
+  else:
+    student_groups = [good, bad]
+
   strs = [(
     f'{rol_students.mention}, below are your evaluation pairs for today:\n\n'
     '`CODE: TESTER   <   >   CODER`'
   )]
-  key = 'code'
-  code = int(u.get_value(key))
 
-  if len(students) > 1:
-    for i in range(len(students)):
-      if i == len(students) - 1:
-        evaluatee = students[0]
+  code_key = 'code'
+  code = int(u.get_value(code_key))
 
-      else:
-        evaluatee = students[i + 1]
+  for students in student_groups:
+    if len(students) > 1:
+      random.shuffle(students)
 
-      chn_eval_key = f'{evaluatee.id}-channel-id'
+      for i in range(len(students)):
+        if i == len(students) - 1:
+          evaluatee = students[0]
+
+        else:
+          evaluatee = students[i + 1]
+
+        chn_eval_key = f'{evaluatee.id}-channel-id'
+
+        try:
+          chn_eval_id = u.get_value(chn_eval_key)
+
+        except Exception as e:
+          print(f'ERROR: assign_peers(): {e}')
+
+        else:
+          chn_eval = get_channel(bot, chn_eval_id)
+
+          await chn_eval.set_permissions(students[i], view_channel = True)
+
+          evaluator_key = f'{evaluatee.id}-evaluator'
+
+          try:
+            prev_evaluator_id = int(u.get_value(evaluator_key))
+
+          except Exception as e:
+            print(f'ERROR: assign_peers(): {e}')
+
+          else:
+            prev_evaluator = get_user(bot, prev_evaluator_id)
+
+            await chn_eval.set_permissions(prev_evaluator, overwrite = None)
+
+          u.put(students[i].id, evaluator_key)
+          code_str = str(code).zfill(4)
+          strs.append(f'{code_str} : {students[i].name}   <   >   {evaluatee.name}')
+          code += 1
+
+    elif len(students) == 1:
+      chn_eval_key = f'{students[0].id}-channel-id'
+      evaluator_key = f'{students[0].id}-evaluator'
 
       try:
         chn_eval_id = u.get_value(chn_eval_key)
+        prev_evaluator_id = int(u.get_value(evaluator_key))
+        u.del_value(evaluator_key)
 
       except Exception as e:
         print(f'ERROR: assign_peers(): {e}')
 
       else:
         chn_eval = get_channel(bot, chn_eval_id)
+        prev_evaluator = get_user(bot, prev_evaluator_id)
 
-        await chn_eval.set_permissions(students[i], view_channel = True)
+        await chn_eval.set_permissions(prev_evaluator, overwrite = None)
 
-        evaluator_key = f'{evaluatee.id}-evaluator'
+      code_str = str(code).zfill(4)
+      strs.append(f'{code_str} : {students[0].name}   <   >   {students[0].name}')
+      code += 1
 
-        try:
-          prev_evaluator_id = int(u.get_value(evaluator_key))
+    u.put(code, code_key)
 
-        except Exception as e:
-          print(f'ERROR: assign_peers(): {e}')
-
-        else:
-          prev_evaluator = get_user(bot, prev_evaluator_id)
-
-          await chn_eval.set_permissions(prev_evaluator, overwrite = None)
-
-        u.put(students[i].id, evaluator_key)
-        code_str = str(code).zfill(4)
-        strs.append(f'{code_str} : {students[i].name}   <   >   {evaluatee.name}')
-        code += 1
-
-  elif len(students) == 1:
-    chn_eval_key = f'{students[0].id}-channel-id'
-    evaluator_key = f'{students[0].id}-evaluator'
-
-    try:
-      chn_eval_id = u.get_value(chn_eval_key)
-      prev_evaluator_id = int(u.get_value(evaluator_key))
-      u.del_value(evaluator_key)
-
-    except Exception as e:
-      print(f'ERROR: assign_peers(): {e}')
-
-    else:
-      chn_eval = get_channel(bot, chn_eval_id)
-      prev_evaluator = get_user(bot, prev_evaluator_id)
-
-      await chn_eval.set_permissions(prev_evaluator, overwrite = None)
-
-    code_str = str(code).zfill(4)
-    strs.append(f'{code_str} : {students[0].name}   <   >   {students[0].name}')
-    code += 1
-
-  u.put(code, key)
-
-  chn_alerts = get_channel(bot, c.chn_alerts_id)
-  await chn_alerts.send('\n'.join(strs))
+    chn_alerts = get_channel(bot, c.chn_alerts_id)
+    await chn_alerts.send('\n'.join(strs))
 
 async def assign_villages(bot):
   rol_villages = [get_role(bot, rol_village_id) for rol_village_id in c.rol_village_ids]
@@ -247,6 +261,51 @@ async def devecho_command(message):
         
   else:
     await message.reply('`$devecho [#channel] [message]`')
+
+async def devwatch_command(message):
+  match = re.search(c.rgx_devwatch, message.content)
+
+  if match:
+    key = 'watchlist'
+    id = message.mentions[0].id
+
+    if key in u.keys():
+      watchlist = u.get_value(key)
+      watchlist.append(id)
+      u.put(watchlist, key)
+
+    else:
+      u.put([id], key)
+
+  else:
+    await message.reply('`$devwatch [@member]`')
+
+async def devwatchlist_command(bot, message):
+  strs = [(
+    '```\n'
+    'WATCHLIST'
+  )]
+
+  key = 'watchlist'
+  watchlist = u.get_value(key)
+
+  if len(watchlist) != 0:
+    idx = 0
+    
+    for id in watchlist:
+      idx_str = str(idx).zfill(2)
+
+      student = get_user(bot, id)
+      strs.append(f'{idx_str}: {student.name} -> {student.id}')
+
+      idx += 1
+
+  else:
+    strs.append('No one in watchlist.')
+
+  strs.append('```')
+
+  await message.channel.send('\n'.join(strs))
 
 async def add_bot_command(bot, message):
   match = re.search(c.rgx_addbot, message.content)

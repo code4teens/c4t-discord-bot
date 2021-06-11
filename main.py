@@ -60,7 +60,13 @@ async def on_message(message):
 
       elif message.content.startswith('$devecho'):
         await core.devecho_command(message)
+
+      elif message.content.startswith('$devwatch'):
+        await core.devwatch_command(message)
       
+      elif message.content == '$devwatchlist':
+        await core.devwatchlist_command(bot, message)
+
       elif message.content == '$help':
         await message.reply(c.help_text)
 
