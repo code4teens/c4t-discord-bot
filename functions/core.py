@@ -321,7 +321,7 @@ async def add_bot_command(bot, message):
       if message_key not in u.keys():
         rol_devs = get_role(bot, c.rol_devs_id)
         chn_log = get_channel(bot, c.chn_log_id)
-        log_message = await chn_log.send(f'{rol_devs.mention} {link}')
+        log_message = await chn_log.send(f'{rol_devs.mention} Kindly add this bot as soon as possible.\n{link}')
         u.put(log_message.id, message_key)
         u.put(message.author.id, owner_key)
 
