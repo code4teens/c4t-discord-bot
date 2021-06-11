@@ -175,8 +175,7 @@ emojis = [
   ":neutral_face:",
   ":partying_face:",
   ":money_mouth:",
-  ":ghost:",
-  "<:kawaii_pikachu:833590617632276531>"
+  ":ghost:"
 ]
 
 gifs = [
