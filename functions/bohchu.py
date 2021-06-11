@@ -226,8 +226,8 @@ async def movie_command(message):
     url_2 = f"https://www.imdb.com{movie_link}"
     content_2 = u.requests_get(url_2).content
     soup = BeautifulSoup(content_2, "html.parser")
-    parent = soup.find("div", attrs = {"class": "credit_summary_item"})
-    director = parent.a.text
+    element = soup.find("a",attrs={"class":"ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link"})
+    director = element.text
     msg = f"Movie Name: {movie_name} \nDirector: {director}"
 
     await message.reply(msg)
