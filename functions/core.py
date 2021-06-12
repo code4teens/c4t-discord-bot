@@ -146,10 +146,10 @@ async def assign_peers(bot):
       strs.append(f'{code_str} : {students[0].name}   <   >   {students[0].name}')
       code += 1
 
-    u.put(code, code_key)
+  u.put(code, code_key)
 
-    chn_alerts = get_channel(bot, c.chn_alerts_id)
-    await chn_alerts.send('\n'.join(strs))
+  chn_alerts = get_channel(bot, c.chn_alerts_id)
+  await chn_alerts.send('\n'.join(strs))
 
 async def assign_villages(bot):
   rol_villages = [get_role(bot, rol_village_id) for rol_village_id in c.rol_village_ids]
