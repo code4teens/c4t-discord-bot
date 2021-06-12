@@ -233,7 +233,7 @@ schedule = {
   # Day 5
   '2021-06-13': [
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day5.pdf', 'message': f'Good Morning <@&{rol_students_id}>, this is your Day05 assignment.'},
-    {'time': '09:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_villages, 'message': None},
+    # {'time': '09:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_villages, 'message': None}, # manually disable for now
     {'time': '09:00', 'type': u.Alert.FILE, 'payload': 'resources/day9.pdf', 'message': f'Additionally, you are now put into groups for this assignment. All the best!'},
     {'time': '12:00', 'type': u.Alert.COROUTINE, 'payload': core.assign_peers, 'message': None},
     {'time': '12:00', 'type': u.Alert.MESSAGE, 'payload': None, 'message': f'<@&{rol_students_id}>, upon conducting your evaluations, kindly submit below form before 10:00 pm tonight. Both the tester AND coder must fill out the form.\n\n{lnk_eval}'}
