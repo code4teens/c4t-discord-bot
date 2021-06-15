@@ -155,9 +155,7 @@ async def on_raw_reaction_add(payload):
 @bot.event
 async def on_error(event, *args, **kwargs):
   err = traceback.format_exc()
-  print('--------ERROR--------')
-  print(err)
-  print('--------ERROR--------')
+  print(c.red + err + c.reset)
 
   chn_error_log = core.get_channel(bot, c.chn_error_log_id)
 

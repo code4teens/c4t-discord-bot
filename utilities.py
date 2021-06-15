@@ -7,6 +7,8 @@ import requests
 from flask import Flask
 from replit import db
 
+import constants as c
+
 app = Flask('')
 
 @app.route('/')
@@ -46,7 +48,7 @@ def put(value, key):
 
 def print_keys():
   for index, key in enumerate(keys()):
-    print(f'{index + 1}: {key}: {get_value(key)}')
+    print(f'{c.cyan}{index + 1}: {key}: {get_value(key)}{c.reset}')
 
 def get_now_str():
   a_kl_tz = pytz.timezone('Asia/Kuala_Lumpur')

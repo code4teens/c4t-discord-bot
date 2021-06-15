@@ -55,6 +55,17 @@ prm_add_student_bot_int = 257088
 emoji_ok = '🆗' # \U0001F197
 emoji_tick = '✅' # \U00002705
 
+# colours
+black = '\u001b[30m'
+red = '\u001b[31m'
+green = '\u001b[32m'
+yellow = '\u001b[33m'
+blue = '\u001b[34m'
+magenta = '\u001b[35m'
+cyan = '\u001b[36m'
+white = '\u001b[37m'
+reset = '\u001b[0m'
+
 # external link
 lnk_eval = 'https://forms.gle/68X2jz4CvivBAtYPA'
 
