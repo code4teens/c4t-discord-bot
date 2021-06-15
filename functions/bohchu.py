@@ -108,37 +108,27 @@ async def list_encourage_command(message):
     await message.reply('No encouragements list available.')
 
 async def del_encourage_command(message):
-  msg = message.content[8:]
-
-  if msg:
+  try:
+    index = int(message.content[8:])
     key = 'encouragements'
-
-    if key in u.keys():
-      encouragements = u.get_value(key)
-      index = int(msg)
-
-      if index < len(encouragements):
-        del encouragements[index]
-
-        u.put(encouragements, key)
-
-        await message.reply('Encouraging message deleted.')
-        
-      else:
-        await message.reply('Unable to delete: Message does not exist.')
-  
-  else:
+    encouragements = u.get_value(key)
+    if index < len(encouragements):
+      del encouragements[index]
+      u.put(encouragements, key)
+      await message.reply('Encouraging message deleted.')
+          
+    else:
+      await message.reply('Unable to delete: Message does not exist.')
+  except:
     await message.reply('Please insert the index of message.')
 
 async def del_list_command(message):
-  msg = message.content[10:]
-
-  if msg:
+  try:
+    index = int(message.content[10:])
     key = 'encouragements'
-    
+      
     if key in u.keys():
       encouragements = u.get_value(key).value
-      index = int(msg)
 
       if index < len(encouragements):
         del encouragements[index]
@@ -150,8 +140,8 @@ async def del_list_command(message):
       else:
         await message.reply('Unable to delete: Message does not exist.')
 
-  else:
-    await message.reply('Please insert the index of message.')
+  except:
+      await message.reply('Please insert the index of message.')
 
 async def scrape_name(message):
   url = 'https://webscraper.io/test-sites/tables'
@@ -215,22 +205,28 @@ async def scrape_job(discord,message):
 async def movie_command(message):
   word = message.content[7:]
 
-  if word:
-    url = f"https://www.imdb.com/find?q={word}&s=tt&ttype=ft&ref_=fn_ft"
-    content = u.requests_get(url).content
-    soup = BeautifulSoup(content, "html.parser")
-    result = soup.find("td" ,attrs = {"class": "result_text"})
-    movie_link = result.a.get('href')
-    movie_name = result.a.text
+  try:
 
-    url_2 = f"https://www.imdb.com{movie_link}"
-    content_2 = u.requests_get(url_2).content
-    soup = BeautifulSoup(content_2, "html.parser")
-    element = soup.find("a",attrs={"class":"ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link"})
-    director = element.text
-    msg = f"Movie Name: {movie_name} \nDirector: {director}"
+    if word:
+      url = f"https://www.imdb.com/find?q={word}&s=tt&ttype=ft&ref_=fn_ft"
+      content = u.requests_get(url).content
+      soup = BeautifulSoup(content, "html.parser")
+      result = soup.find("td" ,attrs = {"class": "result_text"})
+      movie_link = result.a.get('href')
+      movie_name = result.a.text
 
-    await message.reply(msg)
+      url = f"https://www.imdb.com{movie_link}"
+      r = u.requests_get(url)
+      soup = BeautifulSoup(r.content, "html.parser")
+      # find element from the newly parsed HTML
+      parent = soup.find("div",attrs={"class":"ipc-html-content ipc-html-content--base"})
+      element = parent.div.text
+      msg = f"Movie Name: {movie_name} \nStoryline: {element}"
 
-  else:
-    await message.reply('Please enter a movie name.')
+      await message.reply(msg)
+
+    else:
+      await message.reply('Please enter a movie name.')
+
+  except:
+    await message.reply('Please enter a correct movie name.')
