@@ -47,8 +47,8 @@ def put(value, key):
   db[key] = value
 
 def print_keys():
-  for index, key in enumerate(keys()):
-    print(f'{c.cyan}{index + 1}: {key}: {get_value(key)}{c.reset}')
+  for i, key in enumerate(keys(), start=1):
+    print(f'{c.cyan}{str(i).zfill(3)}: {key}: {get_value(key)}{c.reset}')
 
 def get_now_str():
   a_kl_tz = pytz.timezone('Asia/Kuala_Lumpur')
