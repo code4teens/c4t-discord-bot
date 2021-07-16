@@ -1,4 +1,6 @@
-*.pyc
-*.env
-*.lock
-*.toml
+.*
+__pycache__
+assets
+db
+log
+venv

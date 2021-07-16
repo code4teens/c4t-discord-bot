@@ -1,0 +1,3 @@
+discord.py==1.7.3
+python-dotenv==0.18.0
+pycodestyle==2.7.0
