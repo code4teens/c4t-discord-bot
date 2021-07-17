@@ -123,11 +123,14 @@ class Events(commands.Cog):
                 'grant you your Role.'
             )
 
-            try:
+            if member.dm_channel is not None:
                 await member.dm_channel.send(text)
-            except Exception as _:  # expect AttributeError
-                dm = await member.create_dm()
-                await dm.send(text)
+
+                # try:
+                #     await member.dm_channel.send(text)
+                # except Exception as _:  # expect AttributeError
+                #     dm = await member.create_dm()
+                #     await dm.send(text)
 
         # send log to '#server-log'
         chn_server_log = discord.utils.get(
