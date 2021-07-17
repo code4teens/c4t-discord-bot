@@ -147,7 +147,12 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        if not after.bot:
+        if after.bot:
+            return
+
+        role_students = discord.utils.get(after.guild.roles, name='Students')
+        
+        if role_students in after.roles:
             with sqlite3.connect(f'db/{after.guild.id}.sqlite') as con:
                 cur = con.cursor()
                 cur.execute(
