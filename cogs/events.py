@@ -323,7 +323,10 @@ class Events(commands.Cog):
         await ctx.message.add_reaction('🟢')
 
         if ctx.command.name == 'say':
-            await ctx.message.delete()
+            try:
+                await ctx.message.delete()
+            except Exception as _:  # expect discord.Forbidden
+                pass
 
 
 def setup(bot):
