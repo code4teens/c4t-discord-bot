@@ -181,23 +181,23 @@ class Events(commands.Cog):
                 name='Students'
             )
 
-            if role_students not in member.roles:
-                return
+            if role_students in member.roles:
+                with sqlite3.connect(f'db/{member.guild.id}.sqlite') as con:
+                    cur = con.cursor()
+                    cur.execute(
+                        'SELECT chn_id FROM students WHERE id = ?',
+                        (member.id,)
+                    )
+                    chn_id, = cur.fetchone()
+                    cur.execute(
+                        'DELETE FROM students WHERE id = ?',
+                        (member.id,)
+                    )
+                    con.commit()
 
-            # update database
-            with sqlite3.connect(f'db/{member.guild.id}.sqlite') as con:
-                cur = con.cursor()
-                cur.execute(
-                    'SELECT chn_id FROM students WHERE id = ?',
-                    (member.id,)
-                )
-                chn_id, = cur.fetchone()
-                cur.execute('DELETE FROM students WHERE id = ?', (member.id,))
-                con.commit()
-
-            # rename inactive user channel
-            chn = discord.utils.get(member.guild.text_channels, id=chn_id)
-            await chn.edit(name=f'mia-{chn.name}', position=0)
+                # rename inactive user channel
+                chn = discord.utils.get(member.guild.text_channels, id=chn_id)
+                await chn.edit(name=f'mia-{chn.name}', position=0)
 
         # send log to '#server-log'
         chn_server_log = discord.utils.get(
