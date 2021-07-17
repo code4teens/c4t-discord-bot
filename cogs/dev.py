@@ -4,6 +4,7 @@ import sqlite3
 from discord.ext import commands
 from discord.ext.commands.errors import CommandError
 import discord
+import pytz
 
 import utils as utl
 
@@ -19,7 +20,8 @@ class Dev(commands.Cog):
         pass
 
     def to_date(argument):
-        return datetime.strptime(argument, '%Y-%m-%d')
+        date = datetime.strptime(argument, '%Y-%m-%d')
+        return date.astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
 
     @commands.command()
     @commands.has_role('Pyrates')
@@ -35,7 +37,7 @@ class Dev(commands.Cog):
             2. Sends 'Survival Guide' to '#alerts'
             3. Sends 'Padlet' reminder to '#padlet'
         """
-        if date < datetime.now():
+        if date < datetime.now(pytz.timezone('Asia/Kuala_Lumpur')):
             raise commands.BadArgument
 
         with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:

@@ -4,6 +4,7 @@ import sqlite3
 
 from discord.ext import commands, tasks
 import discord
+import pytz
 
 import utils as utl
 
@@ -75,6 +76,8 @@ class Schedule(commands.Cog):
                     f'pm later is `{code_str}`.'
                 )
 
+                now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+
                 # update database
                 with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
                     cur = con.cursor()
@@ -83,7 +86,7 @@ class Schedule(commands.Cog):
                         '(day, date, eval_code, coder_id, tester_id) '
                         'VALUES '
                         '(?, ?, ?, ?, ?)',
-                        (day, datetime.now(), code, evaluatee.id, evaluator.id)
+                        (day, now, code, evaluatee.id, evaluator.id)
                     )
                     con.commit()
 
@@ -116,7 +119,7 @@ class Schedule(commands.Cog):
 
     @tasks.loop(seconds=1)
     async def trigger_loop(self):
-        now = datetime.now()
+        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
 
         if now.minute == 0:  # trigger loop when min is 0
             print(f'{utl.green}{now}: Checking schedule...{utl.reset}')
@@ -141,7 +144,7 @@ class Schedule(commands.Cog):
             date_str, = cur.fetchone()
 
         date = datetime.strptime(date_str[:10], '%Y-%m-%d')
-        now = datetime.now()
+        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
 
         if now >= date and now < date + timedelta(days=9):
             delta = now - date

@@ -3,6 +3,7 @@ import traceback
 
 from discord.ext import commands
 import discord
+import pytz
 
 import utils as utl
 
@@ -13,7 +14,7 @@ class ErrorEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, exc):
-        now = datetime.now()
+        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
         date = now.strftime("%Y-%m-%d")
         cmd = (
             f'{ctx.prefix}{ctx.command.name}'
@@ -67,7 +68,7 @@ class ErrorEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_error(self, event, *args, **kwargs):
-        now = datetime.now()
+        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
         date = now.strftime("%Y-%m-%d")
         guild = None
 

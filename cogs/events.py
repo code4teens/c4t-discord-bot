@@ -4,6 +4,7 @@ import sqlite3
 
 from discord.ext import commands
 import discord
+import pytz
 
 import utils as utl
 
@@ -14,10 +15,8 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(
-            f'{utl.green}{datetime.now()}: '
-            f'{self.bot.user.name} is online!{utl.reset}'
-        )
+        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+        print(f'{utl.green}{now}: {self.bot.user.name} is online!{utl.reset}')
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -135,9 +134,10 @@ class Events(commands.Cog):
             member.guild.text_channels,
             name='server-log'
         )
+        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
         await chn_server_log.send(
             '```diff\n'
-            f'# {datetime.now()}\n'
+            f'# {now}\n'
             '\n'
             f'+ {member}: {member.id} joined the server.```'
         )
@@ -196,9 +196,10 @@ class Events(commands.Cog):
             member.guild.text_channels,
             name='server-log'
         )
+        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
         await chn_server_log.send(
             '```diff\n'
-            f'# {datetime.now()}\n'
+            f'# {now}\n'
             '\n'
             f'- {member}: {member.id} left the server.```'
         )
