@@ -153,14 +153,22 @@ class Schedule(commands.Cog):
 
             guild = self.bot.get_guild(guild_id)
             role_students = discord.utils.get(guild.roles, name='Students')
+            chn_server_log = discord.utils.get(
+                guild.text_channels,
+                name='server-log'
+            )
             chn_alerts = discord.utils.get(guild.text_channels, name='alerts')
             chn_townhall = discord.utils.get(
                 guild.voice_channels,
                 name='townhall'
             )
 
+            # schedule test message
+            if now.hour == 7:
+                await chn_server_log.send(
+                    f'This is a scheduled test message for Day {day}.')
             # day 1 @ 8:00 am
-            if now.hour == 8:
+            elif now.hour == 8:
                 if day == 1:
                     await chn_alerts.send(
                         f'Good Morning {role_students.mention}, this is a '
