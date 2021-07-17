@@ -225,7 +225,7 @@ class Dev(commands.Cog):
             lvl, xp = [*map(str, data)]
             user = discord.utils.get(ctx.guild.members, id=id)
             text += (
-                f'{i}. LEVEL{lvl.rjust(3)}:{xp.rjust(5)} '
+                f'{str(i).rjust(2)}. LEVEL{lvl.rjust(3)}:{xp.rjust(5)} '
                 f'XP: {user.display_name}\n'
             )
 
