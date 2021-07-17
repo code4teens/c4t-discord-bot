@@ -206,20 +206,14 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
+        if message.author == self.bot.user or message.guild is None:
             return
 
-        # grant xp to students
-        if message.guild is not None:
-            role_students = discord.utils.get(
-                message.guild.roles,
-                name='Students'
-            )
-
-            if role_students in message.author.roles:
-                givexp = self.bot.get_command('givexp')
-                ctx = await self.bot.get_context(message)
-                await givexp(ctx, message.author)
+        # if not webhook, grant xp
+        if hasattr(message.author, 'roles'):
+            givexp = self.bot.get_command('givexp')
+            ctx = await self.bot.get_context(message)
+            await givexp(ctx, message.author)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

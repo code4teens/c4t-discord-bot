@@ -191,8 +191,6 @@ class Dev(commands.Cog):
                     (lvl, cur_xp, student.id)
                 )
                 con.commit()
-        else:
-            raise commands.BadArgument
 
     @commands.command()
     @commands.has_role('Pyrates')
