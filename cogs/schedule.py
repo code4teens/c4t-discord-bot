@@ -145,6 +145,7 @@ class Schedule(commands.Cog):
 
         date = datetime.strptime(date_str[:10], '%Y-%m-%d')
         date = date.astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
+        date = date.replace(hour=0)
         now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
 
         if now >= date and now < date + timedelta(days=9):
