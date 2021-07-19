@@ -235,12 +235,13 @@ class Dev(commands.Cog):
 
     @commands.command()
     @commands.has_role('Pyrates')
-    async def evals(self, ctx, n: int = 0):
+    async def evals(self, ctx, n: int = 0, nick: bool = True):
         """
-        Shows eval pairs
+        Shows latest discussion pairs
 
         Args:
-            n: Optional argument to show Day n evals
+            n(int): Optional argument to show Day n discussion pairs
+            nick(bool): Optional argument to show user nickname
         """
 
         with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
@@ -252,10 +253,8 @@ class Dev(commands.Cog):
                     'WHERE a.day = b.maxDay'
                 )
             else:
-                cur.execute(
-                    'SELECT * FROM evals WHERE day = ?',
-                    (n,)
-                )
+                cur.execute('SELECT * FROM evals WHERE day = ?', (n,))
+
             recs = cur.fetchall()
 
         text = (
@@ -270,9 +269,13 @@ class Dev(commands.Cog):
             code_str = str(code).zfill(4)
             coder = discord.utils.get(ctx.guild.members, id=coder_id)
             tester = discord.utils.get(ctx.guild.members, id=tester_id)
-            text += (
-                f'{code_str}: {tester.display_name} -> {coder.display_name} \n'
-            )
+            if nick:
+                coder_name = coder.display_name
+                tester_name = tester.display_name
+            else:
+                coder_name = f'{coder.name}#{coder.discriminator}'
+                tester_name = f'{tester.name}#{tester.discriminator}'
+            text += f'{code_str}: {tester_name}  ->  {coder_name} \n'
 
         text += '```'
         await ctx.reply(text)
