@@ -262,6 +262,7 @@ class Dev(commands.Cog):
             '-----------\n'
             f'DAY {n} EVALS\n'
             '-----------\n'
+            '0000: Tester  ->  Coder\n'
         )
 
         for rec in recs:
