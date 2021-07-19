@@ -270,12 +270,14 @@ class Dev(commands.Cog):
             code_str = str(code).zfill(4)
             coder = discord.utils.get(ctx.guild.members, id=coder_id)
             tester = discord.utils.get(ctx.guild.members, id=tester_id)
+
             if nick:
                 coder_name = coder.display_name
                 tester_name = tester.display_name
             else:
                 coder_name = f'{coder.name}#{coder.discriminator}'
                 tester_name = f'{tester.name}#{tester.discriminator}'
+
             text += f'{code_str}: {tester_name}  ->  {coder_name} \n'
 
         text += '```'
