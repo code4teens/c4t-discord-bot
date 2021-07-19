@@ -194,12 +194,13 @@ class Dev(commands.Cog):
 
     @commands.command()
     @commands.has_role('Pyrates')
-    async def leaderboard(self, ctx, n: int = 5):
+    async def leaderboard(self, ctx, n: int = 5, nick: bool = True):
         """
         Shows leaderboard
 
         Args:
-            n: Optional argument to only show top n results
+            n(int): Optional argument to only show top n results
+            nick(bool): Optional argument to show user name with discriminator
         """
         text = (
             '```\n'
@@ -222,9 +223,11 @@ class Dev(commands.Cog):
             id, *data = rec
             lvl, xp = [*map(str, data)]
             user = discord.utils.get(ctx.guild.members, id=id)
+            name = f'{user.display_name}' if nick \
+                else f'{user.name}#{user.discriminator}'
             text += (
                 f'{str(i).rjust(2)}. LEVEL{lvl.rjust(3)}:{xp.rjust(5)} '
-                f'XP: {user.display_name}\n'
+                f'XP: {name}\n'
             )
 
         text += '```'
@@ -304,7 +307,7 @@ class Dev(commands.Cog):
     @leaderboard.error
     async def leaderboard_error(self, ctx, exc):
         if isinstance(exc, commands.BadArgument):
-            await ctx.reply('```$leaderboard [n=5]```')
+            await ctx.reply('```$leaderboard [n=5] [nick=True]```')
 
 
 def setup(bot):
