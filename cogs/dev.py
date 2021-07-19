@@ -280,6 +280,22 @@ class Dev(commands.Cog):
         text += '```'
         await ctx.reply(text)
 
+    @commands.command()
+    @commands.has_role('Pyrates')
+    async def headcount(self, ctx, channel: discord.VoiceChannel):
+        """
+        Gets student headcount in a voice channel
+
+        Args:
+            channel(VoiceChannel): Target voice channel
+        """
+        role_students = discord.utils.get(ctx.guild.roles, name='Students')
+        students = [
+            member for member in channel.members
+            if role_students in member.roles
+        ]
+        await ctx.reply(f'{len(students)} students in {channel.mention}.')
+
     @setup.error
     async def setup_error(self, ctx, exc):
         if isinstance(exc, commands.BadArgument):
@@ -311,6 +327,12 @@ class Dev(commands.Cog):
     async def leaderboard_error(self, ctx, exc):
         if isinstance(exc, commands.BadArgument):
             await ctx.reply('```$leaderboard [n=5] [nick=True]```')
+
+    @headcount.error
+    async def headcount_error(self, ctx, exc):
+        if isinstance(exc, commands.BadArgument) \
+                or isinstance(exc, commands.MissingRequiredArgument):
+            await ctx.reply('```$headcount <channel>```')
 
 
 def setup(bot):
