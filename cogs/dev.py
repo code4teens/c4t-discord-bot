@@ -35,7 +35,7 @@ class Dev(commands.Cog):
         Notes:
             1. Sends 'Code of Conduct' to '#code-of-conduct'
             2. Sends 'Survival Guide' to '#alerts'
-            3. Sends 'Padlet' reminder to '#padlet'
+            3. Sends Padlet reminder to '#padlet'
         """
         if date < datetime.now(pytz.timezone('Asia/Kuala_Lumpur')):
             raise commands.BadArgument
@@ -130,7 +130,7 @@ class Dev(commands.Cog):
 
         Args:
             channel: Destination channel
-            message: Message body wrapped in quotes
+            message: Message body wrapped in double quotes
         """
         await channel.send(message)
 
@@ -142,7 +142,7 @@ class Dev(commands.Cog):
 
         Args:
             channel: Destination channel
-            message: Message body wrapped in quotes
+            message: Message body wrapped in double quotes
             attachment: Any file supported by Discord
         """
         if len(ctx.message.attachments) > 0:
@@ -155,7 +155,7 @@ class Dev(commands.Cog):
     @commands.has_role('Pyrates')
     async def givexp(self, ctx, student: discord.Member, xp: int = 10):
         """
-        Gives XP to student
+        Awards XP to student
 
         Args:
             student: Student to award XP
@@ -200,7 +200,7 @@ class Dev(commands.Cog):
 
         Args:
             n(int): Optional argument to only show top n results
-            nick(bool): Optional argument to show user name with discriminator
+            nick(bool): Optional argument to show user nickname
         """
         text = (
             '```\n'

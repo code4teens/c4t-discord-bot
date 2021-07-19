@@ -12,13 +12,19 @@ class Day4(commands.Cog, name='Day 4'):
     async def echo(self, ctx, message):
         """
         Repeats your message
+
+        Args:
+            message: Message body wrapped in double quotes
         """
         await ctx.reply(message)
 
     @commands.command()
     async def say(self, ctx, message):
         """
-        Repeats your message and deletes the invocation
+        Repeats your message but deletes the invocation
+
+        Args:
+            message: Message body wrapped in double quotes
         """
         await ctx.channel.send(message)
 
