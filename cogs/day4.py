@@ -8,6 +8,23 @@ class Day4(commands.Cog, name='Day 4'):
         self.bot = bot
         self.shapes = ['rock', 'paper', 'scissor']
 
+    async def rps(self, ctx, shape):
+        bot_shape = random.choice(self.shapes)
+        index = self.shapes.index(shape)
+        bot_index = self.shapes.index(bot_shape)
+        diff = index - bot_index
+
+        if diff == 1 or diff == -2:
+            await ctx.reply(
+                f'{shape.capitalize()} beats {bot_shape}. You win!'
+            )
+        elif diff == 2 or diff == -1:
+            await ctx.reply(
+                f'{bot_shape.capitalize()} beats {shape}. I win!'
+            )
+        elif diff == 0:
+            await ctx.reply(f'It\'s a tie!')
+
     @commands.command()
     async def echo(self, ctx, message):
         """
@@ -28,19 +45,36 @@ class Day4(commands.Cog, name='Day 4'):
         """
         await ctx.channel.send(message)
 
-    # @commands.command()
-    # async def rps(self, ctx):
-    #     """
-    #     Plays a game of 'Rock, paper, scissor'
-    #     """
-    #     your_shape = random.choice(self.shapes)
-    #     bot_shape = random.choice(self.shapes)
-    #     your_index = self.shapes.index(your_shape)
-    #     bot_index = self.shapes.index(bot_shape)
-    #     diff = your_index - bot_index
+    @commands.command()
+    async def rock(self, ctx):
+        """
+        Chooses 'Rock' in a game of Rock, paper, scissor
+        """
+        await self.rps(ctx, 'rock')
 
-    #     if diff == 1:
-    #         pass
+    @commands.command()
+    async def paper(self, ctx):
+        """
+        Chooses 'Paper' in a game of Rock, paper, scissor
+        """
+        await self.rps(ctx, 'paper')
+
+    @commands.command()
+    async def scissor(self, ctx):
+        """
+        Chooses 'Scissor' in a game of Rock, paper, scissor
+        """
+        await self.rps(ctx, 'scissor')
+
+    @echo.error
+    async def echo_error(self, ctx, exc):
+        if isinstance(exc, commands.MissingRequiredArgument):
+            await ctx.reply('```$echo "<message>"```')
+
+    @say.error
+    async def say_error(self, ctx, exc):
+        if isinstance(exc, commands.MissingRequiredArgument):
+            await ctx.reply('```$say "<message>"```')
 
 
 def setup(bot):
