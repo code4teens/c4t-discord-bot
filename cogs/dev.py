@@ -268,17 +268,17 @@ class Dev(commands.Cog):
         for rec in recs:
             _, _, code, coder_id, tester_id = rec
             code_str = str(code).zfill(4)
-            coder = discord.utils.get(ctx.guild.members, id=coder_id)
-            tester = discord.utils.get(ctx.guild.members, id=tester_id)
+            param = 'nickname' if nick else 'name'
 
-            if nick:
-                coder_name = coder.display_name
-                tester_name = tester.display_name
-            else:
-                coder_name = f'{coder.name}#{coder.discriminator}'
-                tester_name = f'{tester.name}#{tester.discriminator}'
+            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+                cur = con.cursor()
+                cur.executemany(
+                    'SELECT ? FROM main WHERE id = ?',
+                    [(param, coder_id), (param, tester_id)]
+                )
+                coder, tester = cur.fetchall()
 
-            text += f'{code_str}: {tester_name}  ->  {coder_name} \n'
+            text += f'{code_str}: {tester,}  ->  {coder,} \n'
 
         text += '```'
         await ctx.reply(text)
