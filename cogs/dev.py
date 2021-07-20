@@ -273,7 +273,7 @@ class Dev(commands.Cog):
             with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
                 cur = con.cursor()
                 cur.executemany(
-                    'SELECT ? FROM main WHERE id = ?',
+                    'SELECT ? FROM students WHERE id = ?',
                     [(param, coder_id), (param, tester_id)]
                 )
                 coder, tester = cur.fetchall()
