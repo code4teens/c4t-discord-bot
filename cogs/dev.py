@@ -268,17 +268,35 @@ class Dev(commands.Cog):
         for rec in recs:
             _, _, code, coder_id, tester_id = rec
             code_str = str(code).zfill(4)
-            param = 'nickname' if nick else 'name'
 
-            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                cur = con.cursor()
-                cur.executemany(
-                    'SELECT ? FROM students WHERE id = ?',
-                    [(param, coder_id), (param, tester_id)]
-                )
-                coder, tester = cur.fetchall()
+            if nick:
+                with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+                    cur = con.cursor()
+                    cur.execute(
+                        'SELECT nickname FROM students WHERE id = ?',
+                        (coder_id,)
+                    )
+                    coder_name, = cur.fetchone()
+                    cur.execute(
+                        'SELECT nickname FROM students WHERE id = ?',
+                        (tester_id,)
+                    )
+                    tester_name, = cur.fetchone()
+            else:
+                with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+                    cur = con.cursor()
+                    cur.execute(
+                        'SELECT name FROM students WHERE id = ?',
+                        (coder_id,)
+                    )
+                    coder_name, = cur.fetchone()
+                    cur.execute(
+                        'SELECT name FROM students WHERE id = ?',
+                        (tester_id,)
+                    )
+                    tester_name, = cur.fetchone()
 
-            text += f'{code_str}: {tester,}  ->  {coder,} \n'
+            text += f'{code_str}: {tester_name}  ->  {coder_name}\n'
 
         text += '```'
         await ctx.reply(text)
