@@ -209,22 +209,29 @@ class Dev(commands.Cog):
             '-----------\n'
         )
 
-        with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-            cur = con.cursor()
-            cur.execute(
-                'SELECT id, lvl, xp FROM students '
-                'ORDER BY lvl DESC, xp DESC '
-                'LIMIT ?',
-                (n,)
-            )
-            recs = cur.fetchall()
+        if nick:
+            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+                cur = con.cursor()
+                cur.execute(
+                    'SELECT nickname, lvl, xp FROM students '
+                    'ORDER BY lvl DESC, xp DESC, nickname '
+                    'LIMIT ?',
+                    (n,)
+                )
+                recs = cur.fetchall()
+        else:
+            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+                cur = con.cursor()
+                cur.execute(
+                    'SELECT name, lvl, xp FROM students '
+                    'ORDER BY lvl DESC, xp DESC, name '
+                    'LIMIT ?',
+                    (n,)
+                )
+                recs = cur.fetchall()
 
         for i, rec in enumerate(recs, start=1):
-            id, *data = rec
-            lvl, xp = [*map(str, data)]
-            user = discord.utils.get(ctx.guild.members, id=id)
-            name = f'{user.display_name}' if nick \
-                else f'{user.name}#{user.discriminator}'
+            name, lvl, xp = [*map(str, rec)]
             text += (
                 f'{str(i).rjust(2)}. LEVEL{lvl.rjust(3)}:{xp.rjust(5)} '
                 f'XP: {name}\n'
