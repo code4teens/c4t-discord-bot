@@ -2,7 +2,7 @@ from discord.ext import commands
 import requests
 
 
-class Day8(commands.Cog, name='Day 8'):
+class Hidden(commands.Cog, name='Hidden'):
     def __init__(self, bot):
         self.bot = bot
 
@@ -38,4 +38,4 @@ class Day8(commands.Cog, name='Day 8'):
 
 
 def setup(bot):
-    bot.add_cog(Day8(bot))
+    bot.add_cog(Hidden(bot))
