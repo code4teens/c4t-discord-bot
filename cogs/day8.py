@@ -11,19 +11,6 @@ class Day8(commands.Cog, name='Day 8'):
         data = requests.get(url).json()
         return data['ip']
 
-    @commands.command(hidden=True)
-    async def joke(self, ctx):
-        """
-        Tells a joke
-        """
-        url = 'https://official-joke-api.appspot.com/random_joke'
-        data = requests.get(url).json()
-        await ctx.reply(
-            f'{data["setup"]}\n'
-            '\n'
-            f'*{data["punchline"].strip()}*'
-        )
-
     @commands.command()
     async def ip(self, ctx):
         """
@@ -35,7 +22,7 @@ class Day8(commands.Cog, name='Day 8'):
     @commands.command()
     async def iplocation(self, ctx):
         """
-        Returns the bot's IPv4 address geolocation
+        Returns the bot's location
         """
         ip = self.get_ip()
         url = f'https://ipinfo.io/{ip}/geo'
@@ -45,7 +32,7 @@ class Day8(commands.Cog, name='Day 8'):
     @commands.command()
     async def iplocation_2(self, ctx):
         """
-        Reacts with a flag corresponding to the bot's IPv4 address geolocation
+        Reacts with a flag corresponding to the bot's location
         """
         ip = self.get_ip()
         url = f'https://ipinfo.io/{ip}/geo'
