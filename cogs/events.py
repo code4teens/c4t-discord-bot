@@ -185,17 +185,17 @@ class Events(commands.Cog):
                 with sqlite3.connect(f'db/{member.guild.id}.sqlite') as con:
                     cur = con.cursor()
                     cur.execute(
-                        'SELECT chn_id FROM students WHERE id = ?',
+                        'SELECT nickname, chn_id FROM students WHERE id = ?',
                         (member.id,)
                     )
-                    chn_id, = cur.fetchone()
+                    nickname, chn_id = cur.fetchone()
+                    cur.execute(
+                        'UPDATE students SET nickname = ? WHERE id = ?',
+                        (f'(MIA) {nickname}', member.id)
+                    )
                     cur.execute(
                         'UPDATE students SET evaluator_id = NULL '
                         'WHERE evaluator_id = ?',
-                        (member.id,)
-                    )
-                    cur.execute(
-                        'DELETE FROM students WHERE id = ?',
                         (member.id,)
                     )
                     con.commit()
