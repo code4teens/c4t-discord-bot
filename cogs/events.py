@@ -190,6 +190,11 @@ class Events(commands.Cog):
                     )
                     chn_id, = cur.fetchone()
                     cur.execute(
+                        'UPDATE students SET evaluator_id = NULL '
+                        'WHERE evaluator_id = ?',
+                        (member.id,)
+                    )
+                    cur.execute(
                         'DELETE FROM students WHERE id = ?',
                         (member.id,)
                     )
