@@ -2,6 +2,7 @@ import random
 
 from discord.ext import commands
 import discord
+import requests
 
 
 class Day5(commands.Cog, name='Day 5'):
@@ -64,6 +65,68 @@ class Day5(commands.Cog, name='Day 5'):
         url = f'https://media1.tenor.com/images/{gif}'
         embed.set_image(url=url)
         await ctx.reply(embed=embed)
+
+    @commands.command()
+    async def intro(self, ctx):
+        """
+        Sends introduction message with photo from local directory
+        """
+        text = f'Hello coders, I am {ctx.author.mention}! Nice to meet you! 😆'
+        file = discord.File('assets/logo.png')
+        await ctx.reply(text, file=file)
+
+    @commands.command()
+    async def img(self, ctx):
+        """
+        Downloads image from predefined link and sends the image
+        """
+        url = 'https://i.imgur.com/SKuJOWE.jpeg'
+        filename = 'assets/photo.jpg'
+        content = requests.get(url).content
+        with open(filename, 'wb') as f:
+            f.write(content)
+
+        await ctx.reply(file=discord.File(filename))
+
+    @commands.command()
+    async def react(self, ctx):
+        """
+        Reacts to message based on mood
+        """
+        mood = ctx.message.content[7:]
+
+        if mood == "happy":
+            await ctx.message.add_reaction("😄")
+        elif mood == "sad":
+            await ctx.message.add_reaction("😞")
+        elif mood == "love":
+            await ctx.message.add_reaction("🥰")
+        elif mood == "wow":
+            await ctx.message.add_reaction("🤩")
+        elif mood == "lol":
+            await ctx.message.add_reaction("🤣")
+        elif mood == "teddy":
+            await ctx.message.add_reaction("🧸")
+        else:
+            embed = discord.Embed(
+                title='**Command Error**',
+                description='Try: `$react [Available Options]`',
+                color=0xff0000
+            )
+            embed.add_field(
+                name='Available Options:',
+                value=(
+                    '1. happy\n'
+                    '2. sad\n'
+                    '3. love\n'
+                    '4. wow\n'
+                    '5. lol\n'
+                    '6. teddy\n'
+                ),
+                inline=False
+            )
+            await ctx.message.add_reaction('✅')
+            await ctx.reply(embed=embed)
 
 
 def setup(bot):
