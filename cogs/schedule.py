@@ -101,12 +101,22 @@ class Schedule(commands.Cog):
             con.commit()
 
     async def assign_groups(self, guild):
+        def get_student(id):
+            return discord.utils.get(guild.members, id=id)
+
         def get_village_role(i):
             return discord.utils.get(guild.roles, name=f'Village {i}')
 
-        role_students = discord.utils.get(guild.roles, name='Students')
-        students = role_students.members
-        random.shuffle(students)
+        with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
+            cur = con.cursor()
+            cur.execute(
+                "SELECT id FROM students WHERE nickname NOT LIKE '(MIA)%' "
+                'ORDER BY lvl DESC, xp DESC'
+            )
+            recs = cur.fetchall()
+
+        ids = [id for rec in recs for id in rec]
+        students = [student for student in map(get_student, ids)]
         roles_villages = [
             x for x in map(get_village_role, range(1, 11)) if x is not None
         ]
