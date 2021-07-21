@@ -81,7 +81,7 @@ class Day7(commands.Cog, name='Day 7'):
         await ctx.reply(msg)
 
     @movie.error
-    async def sql_error(self, ctx, exc):
+    async def movie_error(self, ctx, exc):
         if isinstance(exc, commands.MissingRequiredArgument):
             await ctx.reply('```$movie "<title>"```')
 
