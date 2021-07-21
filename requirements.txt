@@ -1,5 +1,6 @@
+bs4==0.0.1
 discord.py==1.7.3
+pycodestyle==2.7.0
 python-dotenv==0.18.0
 pytz==2021.1
 requests==2.26.0
-pycodestyle==2.7.0
