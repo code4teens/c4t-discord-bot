@@ -151,7 +151,7 @@ class Events(commands.Cog):
             return
 
         role_students = discord.utils.get(after.guild.roles, name='Students')
-        
+
         if role_students in after.roles:
             with sqlite3.connect(f'db/{after.guild.id}.sqlite') as con:
                 cur = con.cursor()
