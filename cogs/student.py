@@ -18,13 +18,21 @@ class Student(commands.Cog):
 
     class WrongBotPermissions(CommandError):
         """
-        Exception raised when a bot is passed the wrong permissions.
+        Exception raised when a bot is granted the wrong permissions.
         """
         pass
 
+    def bot_link(self, argument):
+        regex = (
+            r'https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})'
+            r'&permissions=([0-9]+)&scope=bot'
+        )
+        match = re.search(regex, argument)
+        return match
+
     @commands.command()
     @commands.has_role('Students')
-    async def addbot(self, ctx, link):
+    async def addbot(self, ctx, link: bot_link):
         """
         Adds bot to server
 
@@ -32,62 +40,49 @@ class Student(commands.Cog):
             link: Bot-invite link
         """
         regex = (
-            r'\$addbot '
             r'https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})'
             r'&permissions=([0-9]+)&scope=bot'
         )
-        match = re.search(regex, ctx.message.content)
+        match = re.search(regex, link)
+        bot_id = int(match.group(1))
+        perm = int(match.group(2))
 
-        if match:
-            link = ctx.message.content.split()[1]
-            bot_id = int(match.group(1))
-            perm = int(match.group(2))
+        if perm == 257088:
+            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+                cur = con.cursor()
+                cur.execute(
+                    'SELECT bot_id FROM students WHERE id = ?',
+                    (ctx.author.id,)
+                )
+                bot_id, = cur.fetchone()
 
-            if perm == 257088:
+            if bot_id is None:
+                await ctx.reply('Your bot will be added into the server soon.')
+
+                # prompt '@Pyrates' to add student bot
+                chn_server_log = discord.utils.get(
+                    ctx.guild.text_channels,
+                    name='server-log'
+                )
+                role_devs = discord.utils.get(ctx.guild.roles, name='Pyrates')
+                msg = await chn_server_log.send(
+                    f'{role_devs.mention} Kindly add this bot as soon as '
+                    'possible.\n'
+                    f'{link}'
+                )
+
+                # update database
                 with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
                     cur = con.cursor()
                     cur.execute(
-                        'SELECT bot_id FROM students WHERE id = ?',
-                        (ctx.author.id,)
+                        'UPDATE students SET bot_id = ?, bot_msg_id = ? '
+                        'WHERE id = ?',
+                        (bot_id, msg.id, ctx.author.id)
                     )
-                    rec, = cur.fetchone()
-
-                if rec is None:
-                    await ctx.reply(
-                        'Your bot will be added into the server soon.'
-                    )
-
-                    # prompt '@Devs' to add student bot
-                    chn_server_log = discord.utils.get(
-                        ctx.guild.text_channels,
-                        name='server-log'
-                    )
-                    role_devs = discord.utils.get(
-                        ctx.guild.roles,
-                        name='Pyrates'
-                    )
-                    msg = await chn_server_log.send(
-                        f'{role_devs.mention} Kindly add this bot as soon as '
-                        'possible.\n'
-                        f'{link}'
-                    )
-
-                    # update database
-                    with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                        cur = con.cursor()
-                        cur.execute(
-                            'UPDATE students SET '
-                            'bot_id = ?, '
-                            'bot_msg_id = ? '
-                            'WHERE id = ?',
-                            (bot_id, msg.id, ctx.author.id)
-                        )
-                else:
-                    raise self.MultipleBotApplication
             else:
-                raise self.WrongBotPermissions
+                raise self.MultipleBotApplication
         else:
-            raise commands.BadArgument
+            raise self.WrongBotPermissions
 
     @commands.command()
     @commands.has_role('Students')
