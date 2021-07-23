@@ -17,63 +17,52 @@ class Schedule(commands.Cog):
     async def assign_peers(self, guild, day):
         with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
             cur = con.cursor()
-            cur.execute('SELECT value FROM main WHERE key = "eval_code"')
-            code, = [*map(int, cur.fetchone())]
+            cur.execute('SELECT COUNT(*) FROM evals')
+            code, = cur.fetchone()
 
         role_students = discord.utils.get(guild.roles, name='Students')
         students = role_students.members
         random.shuffle(students)
 
         for i, _ in enumerate(students):
-            if len(students) == 1:
-                break
-
-            evaluator = students[i]
-
-            if i == len(students) - 1:
-                evaluatee = students[0]
-            else:
-                evaluatee = students[i + 1]
+            tester = students[i]
+            coder = students[0] if i == len(students - 1) else students[i + 1]
 
             with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
                 cur = con.cursor()
                 cur.execute(
-                    'SELECT chn_id, evaluator_id FROM students WHERE id = ?',
-                    (evaluatee.id,)
-                )
-                chn_eval_id, prev_evaluator_id = cur.fetchone()
-
-                if day != 9:
-                    cur.execute(
-                        'UPDATE students SET evaluator_id = ? WHERE id = ?',
-                        (evaluator.id, evaluatee.id)
+                    'SELECT chn_id FROM students WHERE id = ?', (coder.id,)
                     )
-                    con.commit()
+                chn_eval_id, = cur.fetchone()
+                cur.execute(
+                    'SELECT tester_id from evals '
+                    'WHERE coder_id = ? AND day = ?',
+                    (coder.id, day - 1)
+                )
+                prev_tester_id, = cur.fetchone()
 
             chn_eval = discord.utils.get(guild.text_channels, id=chn_eval_id)
 
-            if prev_evaluator_id is not None:
-                # deny previous evaluator permission to view channel
-                prev_evaluator = discord.utils.get(
+            # deny previous tester permission to view coder channel
+            if prev_tester_id is not None:
+                prev_tester = discord.utils.get(
                     guild.members,
-                    id=prev_evaluator_id
+                    id=prev_tester_id
                 )
-                await chn_eval.set_permissions(prev_evaluator, overwrite=None)
+                await chn_eval.set_permissions(prev_tester, overwrite=None)
 
             if day != 9:
-                # grant evaluator permission to view channel
-                await chn_eval.set_permissions(
-                    evaluator,
-                    view_channel=True
-                )
+                # grant new tester permission to view coder channel
+                await chn_eval.set_permissions(tester, view_channel=True)
 
                 # send message to channel informing discussion pairs
+                code += 1
                 code_str = str(code).zfill(4)
                 await chn_eval.send(
-                    f'Hi {evaluatee.mention}, your code tester for today is '
-                    f'{evaluator.mention}, you may use this channel to '
-                    'discuss the project. Your unique submission code for 4-6 '
-                    f'pm later is `{code_str}`.'
+                    f'Hi {coder.mention}, your tester for today is '
+                    f'{tester.mention}, the two of you may use this channel '
+                    'to discuss. Your unique submission ID for 4-6 pm later '
+                    f'is `{code_str}`.'
                 )
 
                 now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
@@ -86,19 +75,9 @@ class Schedule(commands.Cog):
                         '(day, date, eval_code, coder_id, tester_id) '
                         'VALUES '
                         '(?, ?, ?, ?, ?)',
-                        (day, now, code, evaluatee.id, evaluator.id)
+                        (day, now, code, coder.id, tester.id)
                     )
                     con.commit()
-
-                code += 1
-
-        with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
-            cur = con.cursor()
-            cur.execute(
-                'UPDATE main SET value = ? WHERE key = ?',
-                (code, 'eval_code')
-            )
-            con.commit()
 
     async def assign_groups(self, guild):
         def get_student(id):
