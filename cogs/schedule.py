@@ -12,6 +12,7 @@ import utils as utl
 class Schedule(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.timezone = pytz.timezone('Asia/Kuala_Lumpur')
         self.trigger_loop.start()
 
     async def assign_peers(self, guild, day):
@@ -65,7 +66,7 @@ class Schedule(commands.Cog):
                     f'is `{code_str}`.'
                 )
 
-                now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+                now = datetime.now(self.timezone)
 
                 # update database
                 with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
@@ -108,7 +109,7 @@ class Schedule(commands.Cog):
 
     @tasks.loop(seconds=1)
     async def trigger_loop(self):
-        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+        now = datetime.now(self.timezone)
 
         if now.minute == 0:  # trigger loop when min is 0
             print(f'{utl.green}{now}: Checking schedule...{utl.reset}')
@@ -133,16 +134,15 @@ class Schedule(commands.Cog):
             date_str, = cur.fetchone()
 
         date = datetime.strptime(date_str[:10], '%Y-%m-%d')
-        date = date.astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
+        date = date.astimezone(self.timezone)
         date = date.replace(hour=0)
-        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+        now = datetime.now(self.timezone)
 
         if now >= date and now < date + timedelta(days=9):
             delta = now - date
             day = delta.days + 1
 
             guild = self.bot.get_guild(guild_id)
-            role_students = discord.utils.get(guild.roles, name='Students')
             chn_server_log = discord.utils.get(
                 guild.text_channels,
                 name='server-log'
@@ -152,15 +152,21 @@ class Schedule(commands.Cog):
                 guild.voice_channels,
                 name='townhall'
             )
+            chn_chit_chat = discord.utils.get(
+                guild.text_channels,
+                name='chit-chat'
+            )
+            role_students = discord.utils.get(guild.roles, name='Students')
 
-            # schedule test message
+            # everyday @ 7:00 am
             if now.hour == 7:
                 await chn_server_log.send(
-                    f'This is a scheduled test message for Day {day}.')
+                    f'This is a scheduled test message for Day {day}.'
+                )
             # day 1 @ 8:00 am
             elif now.hour == 8:
                 if day == 1:
-                    await chn_alerts.send(
+                    await chn_chit_chat.send(
                         f'Good Morning {role_students.mention}, this is a '
                         'reminder for our Townhall at 9:00 am. See you at '
                         f'{chn_townhall.mention}!'
@@ -175,7 +181,7 @@ class Schedule(commands.Cog):
                         f'{utl.projects[day - 1]}'
                     )
                 elif day == 9:  # on day 9
-                    await chn_alerts.send(
+                    await chn_chit_chat.send(
                         f'Good Morning {role_students.mention}, all the best '
                         'on your final day!'
                     )
@@ -192,8 +198,8 @@ class Schedule(commands.Cog):
             elif now.hour == 10:
                 if day == 1:
                     await chn_alerts.send(
-                        f'Good Morning {role_students.mention}, this is your '
-                        f'Day-0{day} assignment. All the best!\n'
+                        f'Hi {role_students.mention}, this is your Day-0{day} '
+                        'assignment. All the best!\n'
                         '\n'
                         f'{utl.projects[day - 1]}'
                     )
@@ -215,9 +221,9 @@ class Schedule(commands.Cog):
             # days 1, 2, 4 & 9 @ 5:00 pm
             elif now.hour == 17:
                 if day == 1 or day == 2 or day == 4 or day == 9:
-                    await chn_alerts.send(
-                        f'Good Evening {role_students.mention}, this is a '
-                        'reminder for our Townhall at 6:00 pm. See you at '
+                    await chn_chit_chat.send(
+                        f'Hi {role_students.mention}, this is a reminder for '
+                        'our Townhall at 6:00 pm. See you at '
                         f'{chn_townhall.mention}!'
                     )
 
