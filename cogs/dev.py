@@ -20,9 +20,9 @@ class Dev(commands.Cog):
         """
         pass
 
-    def to_date(self, argument):
+    def to_date(argument):
         date = datetime.strptime(argument, '%Y-%m-%d')
-        return date.astimezone(self.timezone)
+        return date.astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
 
     @commands.command()
     @commands.has_role('Pyrates')

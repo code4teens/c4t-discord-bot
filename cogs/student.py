@@ -22,17 +22,9 @@ class Student(commands.Cog):
         """
         pass
 
-    def bot_link(self, argument):
-        regex = (
-            r'https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})'
-            r'&permissions=([0-9]+)&scope=bot'
-        )
-        match = re.search(regex, argument)
-        return match
-
     @commands.command()
     @commands.has_role('Students')
-    async def addbot(self, ctx, link: bot_link):
+    async def addbot(self, ctx, link):
         """
         Adds bot to server
 
@@ -43,46 +35,55 @@ class Student(commands.Cog):
             r'https://discord.com/api/oauth2/authorize\?client_id=([0-9]{18})'
             r'&permissions=([0-9]+)&scope=bot'
         )
-        match = re.search(regex, link)
-        bot_id = int(match.group(1))
-        perm = int(match.group(2))
+        match = re.fullmatch(regex, link)
 
-        if perm == 257088:
-            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                cur = con.cursor()
-                cur.execute(
-                    'SELECT bot_id FROM students WHERE id = ?',
-                    (ctx.author.id,)
-                )
-                bot_id, = cur.fetchone()
+        if match:
+            bot_id = int(match.group(1))
+            perm = int(match.group(2))
 
-            if bot_id is None:
-                await ctx.reply('Your bot will be added into the server soon.')
-
-                # prompt '@Pyrates' to add student bot
-                chn_server_log = discord.utils.get(
-                    ctx.guild.text_channels,
-                    name='server-log'
-                )
-                role_devs = discord.utils.get(ctx.guild.roles, name='Pyrates')
-                msg = await chn_server_log.send(
-                    f'{role_devs.mention} Kindly add this bot as soon as '
-                    'possible.\n'
-                    f'{link}'
-                )
-
-                # update database
+            if perm == 257088:
                 with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
                     cur = con.cursor()
                     cur.execute(
-                        'UPDATE students SET bot_id = ?, bot_msg_id = ? '
-                        'WHERE id = ?',
-                        (bot_id, msg.id, ctx.author.id)
+                        'SELECT bot_id FROM students WHERE id = ?',
+                        (ctx.author.id,)
                     )
+                    rec, = cur.fetchone()
+
+                if rec is None:
+                    await ctx.reply(
+                        'Your bot will be added into the server soon.'
+                    )
+
+                    # prompt '@Pyrates' to add student bot
+                    chn_server_log = discord.utils.get(
+                        ctx.guild.text_channels,
+                        name='server-log'
+                    )
+                    role_devs = discord.utils.get(
+                        ctx.guild.roles,
+                        name='Pyrates'
+                    )
+                    msg = await chn_server_log.send(
+                        f'{role_devs.mention} Kindly add this bot as soon as '
+                        'possible.\n'
+                        f'{link}'
+                    )
+
+                    # update database
+                    with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+                        cur = con.cursor()
+                        cur.execute(
+                            'UPDATE students SET bot_id = ?, bot_msg_id = ? '
+                            'WHERE id = ?',
+                            (bot_id, msg.id, ctx.author.id)
+                        )
+                else:
+                    raise self.MultipleBotApplication
             else:
-                raise self.MultipleBotApplication
+                raise self.WrongBotPermissions
         else:
-            raise self.WrongBotPermissions
+            raise commands.BadArgument
 
     @commands.command()
     @commands.has_role('Students')
