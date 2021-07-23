@@ -27,7 +27,7 @@ class Schedule(commands.Cog):
 
         for i, _ in enumerate(students):
             tester = students[i]
-            coder = students[0] if i == len(students - 1) else students[i + 1]
+            coder = students[0] if i == len(students) - 1 else students[i + 1]
 
             with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
                 cur = con.cursor()
@@ -40,12 +40,13 @@ class Schedule(commands.Cog):
                     'WHERE coder_id = ? AND day = ?',
                     (coder.id, day - 1)
                 )
-                prev_tester_id, = cur.fetchone()
+                rec = cur.fetchone()
 
             chn_eval = discord.utils.get(guild.text_channels, id=chn_eval_id)
 
             # deny previous tester permission to view coder channel
-            if prev_tester_id is not None:
+            if rec is not None:
+                prev_tester_id, = rec
                 prev_tester = discord.utils.get(
                     guild.members,
                     id=prev_tester_id
