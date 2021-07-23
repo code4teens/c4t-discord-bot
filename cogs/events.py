@@ -12,10 +12,14 @@ import utils as utl
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.greets = [
+            'Greetings', 'Hey', 'Hi', 'Howdy', 'Welcome', 'Wassup', 'Yo'
+        ]
+        self.timezone = pytz.timezone('Asia/Kuala_Lumpur')
 
     @commands.Cog.listener()
     async def on_ready(self):
-        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+        now = datetime.now(self.timezone)
         print(f'{utl.green}{now}: {self.bot.user.name} is online!{utl.reset}')
 
     @commands.Cog.listener()
@@ -44,15 +48,14 @@ class Events(commands.Cog):
                 'chn_id INTEGER, '
                 'bot_id INTEGER, '
                 'bot_msg_id TEXT, '
-                'evaluator_id INTEGER, '
                 'lvl INTEGER, '
                 'xp INTEGER)'
             )
             cur.execute(
                 'CREATE TABLE IF NOT EXISTS evals ('
+                'id INTEGER PRIMARY KEY, '
                 'day INTEGER, '
                 'date TEXT, '
-                'eval_code INTEGER PRIMARY KEY, '
                 'coder_id INTEGER, '
                 'tester_id INTEGER)'
             )
@@ -68,16 +71,22 @@ class Events(commands.Cog):
                     'WHERE bot_id = ?',
                     (member.id,)
                 )
-                owner_id, chn_eval_id, msg_id = cur.fetchone()
+                rec = cur.fetchone()
+
+            if rec is None:
+                return
+
+            owner_id, chn_eval_id, msg_id = rec
 
             # send welcome message to '#chit-chat'
             chn_chit_chat = discord.utils.get(
                 member.guild.text_channels,
                 name='chit-chat'
             )
+            greet = random.choice(self.greets)
             owner = discord.utils.get(member.guild.members, id=owner_id)
             await chn_chit_chat.send(
-                f'Welcome {owner.mention}\'s bot, {member.mention}!'
+                f'{greet} {owner.mention}\'s bot, {member.mention}!'
             )
 
             # assign bot '@Student Bots' role
@@ -113,15 +122,23 @@ class Events(commands.Cog):
                 name='code-of-conduct'
             )
             msg = chn_coc.get_partial_message(msg_id)
-            text = (
-                f'Welcome to {member.guild}, {member.name}!\n'
-                '\n'
-                'If you are a student, please read the Code of Conduct:\n'
-                f'{msg.jump_url}.\n'
-                '\n'
-                'If you are not a student, please wait for the Pyrates to '
-                'grant you your Role.'
-            )
+
+            if member.id in utl.admins:
+                text = (
+                    f'Welcome to {member.guild}, {member.name}!\n'
+                    '\n'
+                    'Please wait for the Pyrates to add you into the server.'
+                )
+            else:
+                text = (
+                    f'Welcome to {member.guild}, {member.name}!\n'
+                    '\n'
+                    'If you are a student, please read the Code of Conduct:\n'
+                    f'{msg.jump_url}.\n'
+                    '\n'
+                    'If you are not a student, please wait for the admins to '
+                    'add you into the server.'
+                )
 
             if member.dm_channel is not None:
                 await member.dm_channel.send(text)
@@ -137,7 +154,7 @@ class Events(commands.Cog):
             member.guild.text_channels,
             name='server-log'
         )
-        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+        now = datetime.now(self.timezone)
         await chn_server_log.send(
             '```diff\n'
             f'# {now}\n'
@@ -150,28 +167,31 @@ class Events(commands.Cog):
         if after.bot:
             return
 
-        role_students = discord.utils.get(after.guild.roles, name='Students')
+        if after.display_name != before.display_name:
+            role_students = discord.utils.get(
+                after.guild.roles,
+                name='Students'
+            )
 
-        if role_students in after.roles:
-            with sqlite3.connect(f'db/{after.guild.id}.sqlite') as con:
-                cur = con.cursor()
-                cur.execute(
-                    'UPDATE students SET nickname = ? WHERE id = ? ',
-                    (after.display_name, after.id)
-                )
-                con.commit()
+            if role_students in after.roles:
+                with sqlite3.connect(f'db/{after.guild.id}.sqlite') as con:
+                    cur = con.cursor()
+                    cur.execute(
+                        'UPDATE students SET nickname = ? WHERE id = ?',
+                        (after.display_name, after.id)
+                    )
+                    con.commit()
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         if member.bot:
-            # update database
             with sqlite3.connect(f'db/{member.guild.id}.sqlite') as con:
                 cur = con.cursor()
                 cur.execute(
                     'UPDATE students SET '
                     'bot_id = NULL, '
                     'bot_msg_id = NULL '
-                    'WHERE bot_id = ? ',
+                    'WHERE bot_id = ?',
                     (member.id,)
                 )
                 con.commit()
@@ -185,31 +205,28 @@ class Events(commands.Cog):
                 with sqlite3.connect(f'db/{member.guild.id}.sqlite') as con:
                     cur = con.cursor()
                     cur.execute(
-                        'SELECT nickname, chn_id FROM students WHERE id = ?',
+                        'SELECT chn_id FROM students WHERE id = ?',
                         (member.id,)
                     )
-                    nickname, chn_id = cur.fetchone()
+                    chn_id, = cur.fetchone()
                     cur.execute(
                         'UPDATE students SET nickname = ? WHERE id = ?',
-                        (f'(MIA) {nickname}', member.id)
-                    )
-                    cur.execute(
-                        'UPDATE students SET evaluator_id = NULL '
-                        'WHERE evaluator_id = ?',
-                        (member.id,)
+                        (f'(MIA) {member.display_name}', member.id)
                     )
                     con.commit()
 
                 # rename inactive user channel
                 chn = discord.utils.get(member.guild.text_channels, id=chn_id)
-                await chn.edit(name=f'mia-{chn.name}', position=0)
+                await chn.edit(
+                    name=f'mia-{member.display_name}', position=0
+                )
 
         # send log to '#server-log'
         chn_server_log = discord.utils.get(
             member.guild.text_channels,
             name='server-log'
         )
-        now = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+        now = datetime.now(self.timezone)
         await chn_server_log.send(
             '```diff\n'
             f'# {now}\n'
@@ -230,106 +247,98 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if self.bot.user.id != payload.user_id:
-            if payload.guild_id is not None:
-                guild = self.bot.get_guild(payload.guild_id)
+        if payload.guild_id is not None \
+                and payload.user_id != self.bot.user.id:
+            guild = self.bot.get_guild(payload.guild_id)
 
+            with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
+                cur = con.cursor()
+                cur.execute('SELECT value FROM main WHERE key = "coc_msg_id"')
+                msg_id, = [*map(int, cur.fetchone())]
+
+            member = discord.utils.get(guild.members, id=payload.user_id)
+
+            if payload.message_id == msg_id \
+                    and payload.event_type == 'REACTION_ADD' \
+                    and str(payload.emoji) == '🆗' \
+                    and member.id not in utl.admins \
+                    and len(member.roles) == 1:
+
+                # assign '@Students' role
+                role_students = discord.utils.get(guild.roles, name='Students')
+                await member.add_roles(role_students)
+
+                # send welcome message to '#chit-chat'
+                chn_chit_chat = discord.utils.get(
+                    guild.text_channels,
+                    name='chit-chat'
+                )
+                chn_alerts = discord.utils.get(
+                    guild.text_channels,
+                    name='alerts'
+                )
+                chn_padlet = discord.utils.get(
+                    guild.text_channels,
+                    name='padlet'
+                )
+                greet = random.choice(self.greets)
+
+                await chn_chit_chat.send(
+                    f'{greet} {member.mention}! Kindly check out '
+                    f'{chn_alerts.mention} & {chn_padlet.mention}.'
+                )
+
+                # create user channel
+                ctg_bot = discord.utils.get(guild.categories, name='bot')
+                role_dev_bot = discord.utils.get(
+                    guild.roles,
+                    name='Pyrate Bot'
+                )
+                role_bocals = discord.utils.get(guild.roles, name='BOCALs')
+                role_observers = discord.utils.get(
+                    guild.roles,
+                    name='Observers'
+                )
+                overwrites = {
+                    guild.default_role: discord.PermissionOverwrite(
+                        read_messages=False
+                    ),
+                    role_dev_bot: discord.PermissionOverwrite(
+                        read_messages=True
+                    ),
+                    role_bocals: discord.PermissionOverwrite(
+                        read_messages=True
+                    ),
+                    role_observers: discord.PermissionOverwrite(
+                        read_messages=True
+                    ),
+                    member: discord.PermissionOverwrite(read_messages=True)
+                }
+                topic = 'Test your bot here!'
+                chn_eval = await ctg_bot.create_text_channel(
+                    member.name,
+                    overwrites=overwrites,
+                    topic=topic
+                )
+
+                # update database
                 with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
                     cur = con.cursor()
                     cur.execute(
-                        'SELECT value FROM main WHERE key = "coc_msg_id"'
-                    )
-                    msg_id, = [*map(int, cur.fetchone())]
-
-                member = discord.utils.get(guild.members, id=payload.user_id)
-
-                if payload.message_id == msg_id \
-                        and payload.event_type == 'REACTION_ADD' \
-                        and str(payload.emoji) == '🆗' \
-                        and member.id not in utl.admins \
-                        and len(member.roles) == 1:
-
-                    # assign '@Students' role
-                    role_students = discord.utils.get(
-                        guild.roles,
-                        name='Students'
-                    )
-                    await member.add_roles(role_students)
-
-                    # send welcome message to '#chit-chat'
-                    chn_chit_chat = discord.utils.get(
-                        guild.text_channels,
-                        name='chit-chat'
-                    )
-                    chn_alerts = discord.utils.get(
-                        guild.text_channels,
-                        name='alerts'
-                    )
-                    chn_padlet = discord.utils.get(
-                        guild.text_channels,
-                        name='padlet'
-                    )
-                    greets = [
-                        'Greetings', 'Hey', 'Hi', 'Howdy', 'Welcome', 'Yo'
-                    ]
-                    greet = random.choice(greets)
-
-                    await chn_chit_chat.send(
-                        f'{greet} {member.mention}! Kindly check out '
-                        f'{chn_alerts.mention} & {chn_padlet.mention}.'
-                    )
-
-                    # create user channel
-                    ctg_bot = discord.utils.get(guild.categories, name='bot')
-                    role_dev_bot = discord.utils.get(
-                        guild.roles,
-                        name='Pyrate Bot'
-                    )
-                    role_bocals = discord.utils.get(guild.roles, name='BOCALs')
-                    role_observers = discord.utils.get(
-                        guild.roles,
-                        name='Observers'
-                    )
-                    overwrites = {
-                        guild.default_role: discord.PermissionOverwrite(
-                            read_messages=False
-                        ),
-                        role_dev_bot: discord.PermissionOverwrite(
-                            read_messages=True
-                        ),
-                        role_bocals: discord.PermissionOverwrite(
-                            read_messages=True
-                        ),
-                        role_observers: discord.PermissionOverwrite(
-                            read_messages=True
-                        ),
-                        member: discord.PermissionOverwrite(read_messages=True)
-                    }
-                    topic = 'Test your bot here!'
-                    chn_eval = await ctg_bot.create_text_channel(
-                        member.name,
-                        overwrites=overwrites,
-                        topic=topic
-                    )
-
-                    # update database
-                    with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
-                        cur = con.cursor()
-                        cur.execute(
-                            'INSERT INTO students '
-                            '(id, name, nickname, chn_id, lvl, xp) '
-                            'VALUES '
-                            '(?, ?, ?, ?, ?, ?)',
-                            (
-                                member.id,
-                                f'{member.name}#{member.discriminator}',
-                                member.display_name,
-                                chn_eval.id,
-                                0,
-                                0
-                            )
+                        'INSERT INTO students '
+                        '(id, name, nickname, chn_id, lvl, xp) '
+                        'VALUES '
+                        '(?, ?, ?, ?, ?, ?)',
+                        (
+                            member.id,
+                            f'{member.name}#{member.discriminator}',
+                            member.display_name,
+                            chn_eval.id,
+                            0,
+                            0
                         )
-                        con.commit()
+                    )
+                    con.commit()
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):

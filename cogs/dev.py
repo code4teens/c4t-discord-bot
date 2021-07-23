@@ -12,6 +12,7 @@ import utils as utl
 class Dev(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.timezone = pytz.timezone('Asia/Kuala_Lumpur')
 
     class MissingAttachment(CommandError):
         """
@@ -19,9 +20,9 @@ class Dev(commands.Cog):
         """
         pass
 
-    def to_date(argument):
+    def to_date(self, argument):
         date = datetime.strptime(argument, '%Y-%m-%d')
-        return date.astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
+        return date.astimezone(self.timezone)
 
     @commands.command()
     @commands.has_role('Pyrates')
@@ -37,7 +38,7 @@ class Dev(commands.Cog):
             2. Sends 'Survival Guide' to '#alerts'
             3. Sends Padlet reminder to '#padlet'
         """
-        if date < datetime.now(pytz.timezone('Asia/Kuala_Lumpur')):
+        if date < datetime.now(self.timezone):
             raise commands.BadArgument
 
         with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
@@ -108,8 +109,7 @@ class Dev(commands.Cog):
                     'INSERT INTO main VALUES (?, ?)',
                     [
                         ('coc_msg_id', msg.id),
-                        ('start_date', date),
-                        ('eval_code', 1)
+                        ('start_date', date)
                     ]
                 )
                 con.commit()

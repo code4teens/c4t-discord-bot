@@ -19,7 +19,7 @@ class Schedule(commands.Cog):
         with sqlite3.connect(f'db/{guild.id}.sqlite') as con:
             cur = con.cursor()
             cur.execute('SELECT COUNT(*) FROM evals')
-            code, = cur.fetchone()
+            disc_id, = cur.fetchone()
 
         role_students = discord.utils.get(guild.roles, name='Students')
         students = role_students.members
@@ -57,13 +57,13 @@ class Schedule(commands.Cog):
                 await chn_eval.set_permissions(tester, view_channel=True)
 
                 # send message to channel informing discussion pairs
-                code += 1
-                code_str = str(code).zfill(4)
+                disc_id += 1
+                disc_id_str = str(disc_id).zfill(4)
                 await chn_eval.send(
                     f'Hi {coder.mention}, your tester for today is '
                     f'{tester.mention}, the two of you may use this channel '
-                    'to discuss. Your unique submission ID for 4-6 pm later '
-                    f'is `{code_str}`.'
+                    'to discuss. Your unique discussion ID for 4-6 pm later '
+                    f'is `{disc_id_str}`.'
                 )
 
                 now = datetime.now(self.timezone)
@@ -73,10 +73,10 @@ class Schedule(commands.Cog):
                     cur = con.cursor()
                     cur.execute(
                         'INSERT INTO evals '
-                        '(day, date, eval_code, coder_id, tester_id) '
+                        '(id, day, date, coder_id, tester_id) '
                         'VALUES '
                         '(?, ?, ?, ?, ?)',
-                        (day, now, code, coder.id, tester.id)
+                        (disc_id, day, now, coder.id, tester.id)
                     )
                     con.commit()
 
