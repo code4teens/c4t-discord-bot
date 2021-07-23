@@ -96,6 +96,19 @@ class ErrorEvents(commands.Cog):
                     f'user_id: {member.id}\n'
                     '\n'
                 )
+            elif event == 'on_member_update':
+                _ = args[0]
+                member = args[1]
+                guild = member.guild
+                f.write(
+                    f'{now},\n'
+                    f'event: {event},\n'
+                    f'guild_name: {member.guild.name},\n'
+                    f'guild_id: {member.guild.id},\n'
+                    f'user_nick: {member.display_name},\n'
+                    f'user_id: {member.id}\n'
+                    '\n'
+                )
             elif event == 'on_message':
                 message = args[0]
                 guild = message.guild if message.guild is not None else None
@@ -128,6 +141,22 @@ class ErrorEvents(commands.Cog):
                     f'user_id: {user_id}\n'
                     f'emoji: {payload.emoji}\n'
                     f'msg_id: {payload.message_id}\n'
+                    '\n'
+                )
+            elif event == 'on_command_completion':
+                ctx = args[0]
+                guild = ctx.guild if ctx.guild is not None else None
+                guild_name = guild.name if guild is not None else None
+                guild_id = guild.id if guild is not None else None
+                f.write(
+                    f'{now},\n'
+                    f'event: {event},\n'
+                    f'guild_name: {guild_name},\n'
+                    f'guild_id: {guild_id},\n'
+                    f'user_nick: {ctx.author.display_name},\n'
+                    f'user_id: {ctx.author.id}\n'
+                    f'msg: {ctx.message.content}\n'
+                    f'msg_url: {ctx.message.jump_url}\n'
                     '\n'
                 )
             else:
