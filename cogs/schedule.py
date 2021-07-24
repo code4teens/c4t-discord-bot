@@ -33,7 +33,7 @@ class Schedule(commands.Cog):
                 cur = con.cursor()
                 cur.execute(
                     'SELECT chn_id FROM students WHERE id = ?', (coder.id,)
-                    )
+                )
                 chn_eval_id, = cur.fetchone()
                 cur.execute(
                     'SELECT tester_id from evals '
@@ -44,8 +44,8 @@ class Schedule(commands.Cog):
 
             chn_eval = discord.utils.get(guild.text_channels, id=chn_eval_id)
 
-            # deny previous tester permission to view coder channel
             if rec is not None:
+                # deny previous tester permission to view coder channel
                 prev_tester_id, = rec
                 prev_tester = discord.utils.get(
                     guild.members,
@@ -57,7 +57,7 @@ class Schedule(commands.Cog):
                 # grant new tester permission to view coder channel
                 await chn_eval.set_permissions(tester, view_channel=True)
 
-                # send message to channel informing discussion pairs
+                # send message to coder channel informing discussion pairs
                 disc_id += 1
                 disc_id_str = str(disc_id).zfill(4)
                 await chn_eval.send(
@@ -112,12 +112,12 @@ class Schedule(commands.Cog):
     async def trigger_loop(self):
         now = datetime.now(self.timezone)
 
-        if now.minute == 0:  # trigger loop when min is 0
+        if now.minute == 0:
             print(f'{utl.green}{now}: Checking schedule...{utl.reset}')
             self.check_schedule.start()
             self.trigger_loop.cancel()
 
-    @tasks.loop(seconds=3600)  # run hourly (every 3600 s)
+    @tasks.loop(seconds=3600)
     async def check_schedule(self):
         with sqlite3.connect('db/main.sqlite') as con:
             cur = con.cursor()
@@ -172,22 +172,25 @@ class Schedule(commands.Cog):
                         'reminder for our Townhall at 9:00 am. See you at '
                         f'{chn_townhall.mention}!'
                     )
-            # day 2, 3, 4, 5, 6, 7, 8 & 9 @ 9:00 am
+            # days 2 - 8 @ 9:00 am
             elif now.hour == 9:
-                if day != 1 and day != 9:  # on days 2 - 8
+                # on days 2 - 8
+                if day != 1 and day != 9:
                     await chn_alerts.send(
                         f'Good Morning {role_students.mention}, this is your '
                         f'Day-0{day} assignment. All the best!\n'
                         '\n'
                         f'{utl.projects[day - 1]}'
                     )
-                elif day == 9:  # on day 9
+                # on day 9
+                elif day == 9:
                     await chn_chit_chat.send(
                         f'Good Morning {role_students.mention}, all the best '
                         'on your final day!'
                     )
 
-                if day == 4:  # also on day 4
+                # also on day 4
+                if day == 4:
                     await self.assign_groups(guild)
                     await chn_alerts.send(
                         'You are also put into groups for your Day-09 group '
@@ -207,7 +210,7 @@ class Schedule(commands.Cog):
             # everyday @ 11:00 pm
             elif now.hour == 11:
                 await self.assign_peers(guild, day)
-            # days 1, 2, 3, 4, 5, 6, 7 & 8 @ 4:00 pm
+            # days 1 - 8 @ 4:00 pm
             elif now.hour == 16:
                 if day != 9:
                     form = utl.forms[day - 1]
@@ -229,7 +232,7 @@ class Schedule(commands.Cog):
                     )
 
     @trigger_loop.before_loop
-    async def before_loop_trigger(self):
+    async def before_trigger_loop(self):
         await self.bot.wait_until_ready()
 
 

@@ -46,12 +46,13 @@ class Dev(commands.Cog):
             cur.execute('SELECT value FROM main WHERE key = "coc_msg_id"')
             rec = cur.fetchone()
 
+        chn_coc = discord.utils.get(
+            ctx.guild.text_channels,
+            name='code-of-conduct'
+        )
+
         if rec is None:
             # send 'Code of Conduct' to '#code-of-conduct'
-            chn_coc = discord.utils.get(
-                ctx.guild.text_channels,
-                name='code-of-conduct'
-            )
             role_students = discord.utils.get(
                 ctx.guild.roles,
                 name='Students'
@@ -68,7 +69,6 @@ class Dev(commands.Cog):
                 f'{utl.COC}'
             )
             await msg.add_reaction('🆗')
-            await ctx.reply(f'{msg.jump_url}')
 
             # send 'Surival Guide' to '#alerts'
             chn_alerts = discord.utils.get(
@@ -114,10 +114,6 @@ class Dev(commands.Cog):
                 )
                 con.commit()
         else:
-            chn_coc = discord.utils.get(
-                ctx.guild.text_channels,
-                name='code-of-conduct'
-            )
             msg_id, = [*map(int, rec)]
             msg = chn_coc.get_partial_message(msg_id)
             await ctx.reply(msg.jump_url)
@@ -126,7 +122,7 @@ class Dev(commands.Cog):
     @commands.has_role('Pyrates')
     async def devecho(self, ctx, channel: discord.TextChannel, message):
         """
-        Sends message to a specific channel
+        Sends message to a channel
 
         Args:
             channel: Destination channel
@@ -138,7 +134,7 @@ class Dev(commands.Cog):
     @commands.has_role('Pyrates')
     async def devattach(self, ctx, channel: discord.TextChannel, message):
         """
-        Sends message with attachment to a specific channel
+        Sends message with attachment to a channel
 
         Args:
             channel: Destination channel
@@ -155,11 +151,11 @@ class Dev(commands.Cog):
     @commands.has_role('Pyrates')
     async def givexp(self, ctx, student: discord.Member, xp: int = 10):
         """
-        Awards XP to student
+        Awards XP to a student
 
         Args:
             student: Student to award XP
-            xp: XP amount
+            xp(int): Optional argument to indicate XP amount
         """
         role_students = discord.utils.get(ctx.guild.roles, name='Students')
 
@@ -209,26 +205,25 @@ class Dev(commands.Cog):
             '-----------\n'
         )
 
-        if nick:
-            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                cur = con.cursor()
+        with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
+            cur = con.cursor()
+
+            if nick:
                 cur.execute(
                     'SELECT nickname, lvl, xp FROM students '
                     'ORDER BY lvl DESC, xp DESC, nickname '
                     'LIMIT ?',
                     (n,)
                 )
-                recs = cur.fetchall()
-        else:
-            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                cur = con.cursor()
+            else:
                 cur.execute(
                     'SELECT name, lvl, xp FROM students '
                     'ORDER BY lvl DESC, xp DESC, name '
                     'LIMIT ?',
                     (n,)
                 )
-                recs = cur.fetchall()
+
+            recs = cur.fetchall()
 
         for i, rec in enumerate(recs, start=1):
             name, lvl, xp = [*map(str, rec)]
@@ -253,28 +248,31 @@ class Dev(commands.Cog):
 
         with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
             cur = con.cursor()
-            if n == 0:
-                cur.execute(
-                    'SELECT a.* FROM evals a INNER JOIN ('
-                    'SELECT MAX(day) maxDay FROM evals) b '
-                    'WHERE a.day = b.maxDay'
-                )
-            else:
-                cur.execute('SELECT * FROM evals WHERE day = ?', (n,))
 
+            if n == 0:
+                cur.execute('SELECT MAX(day) FROM evals')
+                day = cur.fetchone()
+
+                if day is not None:
+                    n, = day
+
+            cur.execute(
+                'SELECT id, coder_id, tester_id FROM evals WHERE day = ?',
+                (n,)
+            )
             recs = cur.fetchall()
 
         text = (
             '```\n'
-            '-----------\n'
-            f'DAY {n} EVALS\n'
-            '-----------\n'
+            '-----------------\n'
+            f'DAY {n} DISCUSSIONS\n'
+            '-----------------\n'
             '0000: Tester  ->  Coder\n'
         )
 
         for rec in recs:
-            _, _, code, coder_id, tester_id = rec
-            code_str = str(code).zfill(4)
+            disc_id, coder_id, tester_id = rec
+            disc_id_str = str(disc_id).zfill(4)
 
             if nick:
                 with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
@@ -303,7 +301,7 @@ class Dev(commands.Cog):
                     )
                     tester_name, = cur.fetchone()
 
-            text += f'{code_str}: {tester_name}  ->  {coder_name}\n'
+            text += f'{disc_id_str}: {tester_name}  ->  {coder_name}\n'
 
         text += '```'
         await ctx.reply(text)

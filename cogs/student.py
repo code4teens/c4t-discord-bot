@@ -67,6 +67,7 @@ class Student(commands.Cog):
                     msg = await chn_server_log.send(
                         f'{role_devs.mention} Kindly add this bot as soon as '
                         'possible.\n'
+                        '\n'
                         f'{link}'
                     )
 
