@@ -1,122 +1,28 @@
 from datetime import datetime
-import sqlite3
 
 from discord.ext import commands
-from discord.ext.commands.errors import CommandError
 import discord
-import pytz
 
-import utils as utl
+from utils import API_URL, s, tz
+import requests
 
 
 class Dev(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.timezone = pytz.timezone('Asia/Kuala_Lumpur')
 
-    class MissingAttachment(CommandError):
+    class MissingAttachment(commands.errors.CommandError):
         """
         Exception raised when required attachment is missing.
+
+        This inherits from :exc:`CommandError`.
         """
         pass
 
     def to_date(argument):
         date = datetime.strptime(argument, '%Y-%m-%d')
-        return date.astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
 
-    @commands.command()
-    @commands.has_role('Pyrates')
-    async def setup(self, ctx, date: to_date):
-        """
-        Sets up server
-
-        Args:
-            date: Date in 'yyyy-mm-dd'
-
-        Notes:
-            1. Sends 'Code of Conduct' to '#code-of-conduct'
-            2. Sends 'Survival Guide' to '#alerts'
-            3. Sends Padlet reminder to '#padlet'
-        """
-        if date < datetime.now(self.timezone):
-            raise commands.BadArgument
-
-        with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-            cur = con.cursor()
-            cur.execute('SELECT value FROM main WHERE key = "coc_msg_id"')
-            rec = cur.fetchone()
-
-        chn_coc = discord.utils.get(
-            ctx.guild.text_channels,
-            name='code-of-conduct'
-        )
-
-        if rec is None:
-            # send 'Code of Conduct' to '#code-of-conduct'
-            role_students = discord.utils.get(
-                ctx.guild.roles,
-                name='Students'
-            )
-            msg = await chn_coc.send(
-                'I acknowledge that I have read the Code of Conduct in '
-                'details and am agreeable to the rules, regulations, terms '
-                'and conditions set by the C4T establishment. I will abide by '
-                'the Code of Conduct and I am aware that action will be taken '
-                'against me for any form of misconduct.\n'
-                '\n'
-                f'React OK to be granted {role_students.mention} Role.\n'
-                '\n'
-                f'{utl.COC}'
-            )
-            await msg.add_reaction('🆗')
-
-            # send 'Surival Guide' to '#alerts'
-            chn_alerts = discord.utils.get(
-                ctx.guild.text_channels,
-                name='alerts'
-            )
-            await chn_alerts.send(
-                f'{role_students.mention}, below guide will serve as your '
-                'reference during the BotCamp.\n'
-                '\n'
-                f'{utl.GUIDE}'
-            )
-
-            # send 'Padlet' reminder to '#padlet'
-            chn_padlet = discord.utils.get(
-                ctx.guild.text_channels,
-                name='padlet'
-            )
-            await chn_padlet.send(
-                'Create your own Padlet and share them here! Check out '
-                'Prag\'s Padlet!\n'
-                '\n'
-                f'{utl.PRAG_PADLET}'
-            )
-
-            # update database
-            with sqlite3.connect('db/main.sqlite') as con:
-                cur = con.cursor()
-                cur.execute(
-                    'REPLACE INTO main VALUES (?, ?)',
-                    ('active_guild_id', ctx.guild.id)
-                )
-                con.commit()
-
-            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                cur = con.cursor()
-                cur.executemany(
-                    'INSERT INTO main VALUES (?, ?)',
-                    [
-                        ('coc_msg_id', msg.id),
-                        ('start_date', date)
-                    ]
-                )
-                con.commit()
-        else:
-            msg_id, = [*map(int, rec)]
-            msg = chn_coc.get_partial_message(msg_id)
-            await ctx.reply(msg.jump_url)
+        return date.astimezone(tz)
 
     @commands.command()
     @commands.has_role('Pyrates')
@@ -143,191 +49,33 @@ class Dev(commands.Cog):
         """
         if len(ctx.message.attachments) > 0:
             file = await ctx.message.attachments[0].to_file()
+
             await channel.send(message, file=file)
         else:
             raise self.MissingAttachment
 
     @commands.command()
     @commands.has_role('Pyrates')
-    async def givexp(self, ctx, student: discord.Member, xp: int = 10):
+    async def givexp(self, ctx, user: discord.Member, xp: int = 10):
         """
-        Awards XP to a student
+        Awards XP to a user
 
         Args:
-            student: Student to award XP
-            xp(int): Optional argument to indicate XP amount
+            user: User to award XP
+            xp(int): Optional argument XP amount
         """
-        role_students = discord.utils.get(ctx.guild.roles, name='Students')
+        url = f'{API_URL}/users/{user.id}'
+        get_r = s.get(url, timeout=5)
 
-        if role_students in student.roles:
-            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                cur = con.cursor()
-                cur.execute(
-                    'SELECT lvl, xp FROM students WHERE id = ?',
-                    (student.id,)
-                )
-                lvl, cur_xp = cur.fetchone()
+        if get_r.status_code != requests.codes.ok:
+            get_r.raise_for_status()
 
-            cur_xp += xp
+        get_data = get_r.json()
+        put_data = {'xp': get_data['xp'] + xp}
+        r_put = s.put(url, json=put_data, timeout=5)
 
-            while True:
-                xp_next_lvl = 5 * lvl ** 2 + 50 * lvl + 100
-
-                if cur_xp >= xp_next_lvl:
-                    lvl += 1
-                    cur_xp -= xp_next_lvl
-                else:
-                    break
-
-            # update database
-            with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                cur = con.cursor()
-                cur.execute(
-                    'UPDATE students SET lvl = ?, xp = ? WHERE id = ?',
-                    (lvl, cur_xp, student.id)
-                )
-                con.commit()
-
-    @commands.command()
-    @commands.has_role('Pyrates')
-    async def leaderboard(self, ctx, n: int = 5, nick: bool = True):
-        """
-        Shows leaderboard
-
-        Args:
-            n(int): Optional argument to only show top n results
-            nick(bool): Optional argument to show user nickname
-        """
-        text = (
-            '```\n'
-            '-----------\n'
-            'LEADERBOARD\n'
-            '-----------\n'
-        )
-
-        with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-            cur = con.cursor()
-
-            if nick:
-                cur.execute(
-                    'SELECT nickname, lvl, xp FROM students '
-                    'ORDER BY lvl DESC, xp DESC, nickname '
-                    'LIMIT ?',
-                    (n,)
-                )
-            else:
-                cur.execute(
-                    'SELECT name, lvl, xp FROM students '
-                    'ORDER BY lvl DESC, xp DESC, name '
-                    'LIMIT ?',
-                    (n,)
-                )
-
-            recs = cur.fetchall()
-
-        for i, rec in enumerate(recs, start=1):
-            name, lvl, xp = [*map(str, rec)]
-            text += (
-                f'{str(i).rjust(2)}. LEVEL{lvl.rjust(3)}:{xp.rjust(5)} '
-                f'XP: {name}\n'
-            )
-
-        text += '```'
-        await ctx.reply(text)
-
-    @commands.command()
-    @commands.has_role('Pyrates')
-    async def evals(self, ctx, n: int = 0, nick: bool = True):
-        """
-        Shows latest discussion pairs
-
-        Args:
-            n(int): Optional argument to show Day n discussion pairs
-            nick(bool): Optional argument to show user nickname
-        """
-
-        with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-            cur = con.cursor()
-
-            if n == 0:
-                cur.execute('SELECT MAX(day) FROM evals')
-                day = cur.fetchone()
-
-                if day is not None:
-                    n, = day
-
-            cur.execute(
-                'SELECT id, coder_id, tester_id FROM evals WHERE day = ?',
-                (n,)
-            )
-            recs = cur.fetchall()
-
-        text = (
-            '```\n'
-            '-----------------\n'
-            f'DAY {n} DISCUSSIONS\n'
-            '-----------------\n'
-            '0000: Tester  ->  Coder\n'
-        )
-
-        for rec in recs:
-            disc_id, coder_id, tester_id = rec
-            disc_id_str = str(disc_id).zfill(4)
-
-            if nick:
-                with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                    cur = con.cursor()
-                    cur.execute(
-                        'SELECT nickname FROM students WHERE id = ?',
-                        (coder_id,)
-                    )
-                    coder_name, = cur.fetchone()
-                    cur.execute(
-                        'SELECT nickname FROM students WHERE id = ?',
-                        (tester_id,)
-                    )
-                    tester_name, = cur.fetchone()
-            else:
-                with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                    cur = con.cursor()
-                    cur.execute(
-                        'SELECT name FROM students WHERE id = ?',
-                        (coder_id,)
-                    )
-                    coder_name, = cur.fetchone()
-                    cur.execute(
-                        'SELECT name FROM students WHERE id = ?',
-                        (tester_id,)
-                    )
-                    tester_name, = cur.fetchone()
-
-            text += f'{disc_id_str}: {tester_name}  ->  {coder_name}\n'
-
-        text += '```'
-        await ctx.reply(text)
-
-    @commands.command()
-    @commands.has_role('Pyrates')
-    async def headcount(self, ctx, channel: discord.VoiceChannel):
-        """
-        Gets student headcount in a voice channel
-
-        Args:
-            channel(VoiceChannel): Target voice channel
-        """
-        role_students = discord.utils.get(ctx.guild.roles, name='Students')
-        students = [
-            member for member in channel.members
-            if role_students in member.roles
-        ]
-        await ctx.reply(f'{len(students)} students in {channel.mention}.')
-
-    @setup.error
-    async def setup_error(self, ctx, exc):
-        if isinstance(exc, commands.BadArgument):
-            await ctx.reply('You entered an invalid date!')
-        elif isinstance(exc, commands.MissingRequiredArgument):
-            await ctx.reply('```$setup <date>```')
+        if r_put.status_code != requests.codes.ok:
+            r_put.raise_for_status()
 
     @devecho.error
     async def devecho_error(self, ctx, exc):
@@ -348,17 +96,8 @@ class Dev(commands.Cog):
         if isinstance(exc, commands.BadArgument) \
                 or isinstance(exc, commands.MissingRequiredArgument):
             await ctx.reply('```$givexp <student> <xp>```')
-
-    @leaderboard.error
-    async def leaderboard_error(self, ctx, exc):
-        if isinstance(exc, commands.BadArgument):
-            await ctx.reply('```$leaderboard [n=5] [nick=True]```')
-
-    @headcount.error
-    async def headcount_error(self, ctx, exc):
-        if isinstance(exc, commands.BadArgument) \
-                or isinstance(exc, commands.MissingRequiredArgument):
-            await ctx.reply('```$headcount <channel>```')
+        elif isinstance(exc, requests.exceptions.RequestException):
+            await ctx.reply('Something went wrong...')
 
 
 def setup(bot):

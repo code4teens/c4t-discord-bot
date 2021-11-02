@@ -1,22 +1,24 @@
 import re
-import sqlite3
 
 from discord.ext import commands
-from discord.ext.commands.errors import CommandError
-import discord
+from discord.utils import get
+import requests
+
+from utils import API_URL, BOT_PERM, s
+import utils
 
 
 class Student(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    class MultipleBotApplication(CommandError):
+    class MultipleBotApplication(commands.errors.CommandError):
         """
-        Exception raised when multiple bot applications are made.
+        Exception raised when multiple applications for the same bot are made.
         """
         pass
 
-    class WrongBotPermissions(CommandError):
+    class WrongBotPermissions(commands.errors.CommandError):
         """
         Exception raised when a bot is granted the wrong permissions.
         """
@@ -37,71 +39,48 @@ class Student(commands.Cog):
         )
         match = re.fullmatch(regex, link)
 
-        if match:
-            bot_id = int(match.group(1))
-            perm = int(match.group(2))
-
-            if perm == 257088:
-                with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                    cur = con.cursor()
-                    cur.execute(
-                        'SELECT bot_id FROM students WHERE id = ?',
-                        (ctx.author.id,)
-                    )
-                    rec, = cur.fetchone()
-
-                if rec is None:
-                    await ctx.reply(
-                        'Your bot will be added into the server soon.'
-                    )
-
-                    # prompt '@Pyrates' to add student bot
-                    chn_server_log = discord.utils.get(
-                        ctx.guild.text_channels,
-                        name='server-log'
-                    )
-                    role_devs = discord.utils.get(
-                        ctx.guild.roles,
-                        name='Pyrates'
-                    )
-                    msg = await chn_server_log.send(
-                        f'{role_devs.mention} Kindly add this bot as soon as '
-                        'possible.\n'
-                        '\n'
-                        f'{link}'
-                    )
-
-                    # update database
-                    with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-                        cur = con.cursor()
-                        cur.execute(
-                            'UPDATE students SET bot_id = ?, bot_msg_id = ? '
-                            'WHERE id = ?',
-                            (bot_id, msg.id, ctx.author.id)
-                        )
-                else:
-                    raise self.MultipleBotApplication
-            else:
-                raise self.WrongBotPermissions
-        else:
+        if not match:
             raise commands.BadArgument
 
-    @commands.command()
-    @commands.has_role('Students')
-    async def stats(self, ctx):
-        """
-        Shows user stats
-        """
-        with sqlite3.connect(f'db/{ctx.guild.id}.sqlite') as con:
-            cur = con.cursor()
-            cur.execute(
-                'SELECT lvl, xp FROM students WHERE id = ?',
-                (ctx.author.id,)
-            )
-            lvl, xp = cur.fetchone()
+        bot_id = int(match.group(1))
+        perm = int(match.group(2))
 
-        text = f'You are Level {lvl} with {xp} XP.'
-        await ctx.reply(text)
+        if perm != BOT_PERM:
+            raise self.WrongBotPermissions
+
+        # get bot data
+        get_url = f'{API_URL}/bots/{bot_id}'
+        get_r = s.get(get_url, timeout=5)
+
+        if get_r.status_code == requests.codes.ok:
+            raise self.MultipleBotApplication
+        elif get_r.status_code != requests.codes.not_found:
+            get_r.raise_for_status()
+
+        # notify user bot will be added to server
+        await ctx.reply('Your bot will be added into the server soon.')
+
+        # prompt '@Pyrates' to add student bot
+        role_devs = get(ctx.guild.roles, name='Pyrates')
+        chn_server_log = get(ctx.guild.text_channels, name='server-log')
+        msg = await chn_server_log.send(
+            f'{role_devs.mention} Kindly add this bot as soon as possible.\n'
+            '\n'
+            f'{link}'
+        )
+
+        # update database
+        post_url = f'{API_URL}/bots'
+        data = {
+            'id': bot_id,
+            'user_id': ctx.author.id,
+            'cohort_id': utils.active_cohort['id'],
+            'msg_id': msg.id
+        }
+        post_r = s.post(post_url, json=data, timeout=5)
+
+        if post_r.status_code != requests.codes.created:
+            post_r.raise_for_status()
 
     @addbot.error
     async def addbot_error(self, ctx, exc):
@@ -109,12 +88,14 @@ class Student(commands.Cog):
                 or isinstance(exc, commands.MissingRequiredArgument):
             await ctx.reply('```$addbot <link>```')
         elif isinstance(exc, self.MultipleBotApplication):
-            await ctx.reply('You already submitted a request for a bot.')
+            await ctx.reply('You already added this bot.')
         elif isinstance(exc, self.WrongBotPermissions):
             await ctx.reply(
                 'You are granting your bot the wrong permissions. Kindly '
-                'reconfigure and run the command again.'
+                'reconfigure and try again.'
             )
+        elif isinstance(exc, requests.exceptions.RequestException):
+            await ctx.reply('Something went wrong...')
 
 
 def setup(bot):

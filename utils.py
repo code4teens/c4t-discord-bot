@@ -1,19 +1,17 @@
+from datetime import datetime
 from dotenv import load_dotenv
 import os
 
+import pytz
+import requests
+
+# environment variables
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
-
-BOHCHU = int(os.getenv('BOHCHU'))
-BUNYOD = int(os.getenv('BUNYOD'))
-HANS = int(os.getenv('HANS'))
-PRAG = int(os.getenv('PRAG'))
-YILIN = int(os.getenv('YILIN'))
-JEFF = int(os.getenv('JEFF'))
-LYNN = int(os.getenv('LYNN'))
-THILA = int(os.getenv('THILA'))
-TZERYEE = int(os.getenv('TZERYEE'))
-admins = [BOHCHU, BUNYOD, HANS, PRAG, YILIN, JEFF, LYNN, THILA, TZERYEE]
+API_URL = os.getenv('API_URL')
+API_KEY = os.getenv('API_KEY')
+COC_MSG_ID = int(os.getenv('COC_MSG_ID'))
+BOT_PERM = int(os.getenv('BOT_PERM'))
 
 COC = os.getenv('COC')
 GUIDE = os.getenv('GUIDE')
@@ -28,19 +26,36 @@ PD8 = os.getenv('PD8')
 PD9 = os.getenv('PD9')
 projects = [PD1, PD2, PD3, PD4, PD5, PD6, PD7, PD8, PD9]
 
-FD1 = os.getenv('FD1')
-FD2 = os.getenv('FD2')
-FD3 = os.getenv('FD3')
-FD4 = os.getenv('FD4')
-FD5 = os.getenv('FD5')
-FD6 = os.getenv('FD6')
-FD7 = os.getenv('FD7')
-FD8 = os.getenv('FD8')
-forms = [FD1, FD2, FD3, FD4, FD5, FD6, FD7, FD8]
-
 PRAG_PADLET = os.getenv('PRAG_PADLET')
 
 # console colours
 reset = '\u001b[0m'
 red = '\u001b[31m'
 green = '\u001b[32m'
+
+# localisation
+tz = pytz.timezone('Asia/Kuala_Lumpur')
+
+# requests session
+s = requests.Session()
+s.headers.update({'api-key': API_KEY})
+
+
+# helper functions
+def now():
+    return datetime.now(tz)
+
+
+def get_active_cohort():
+    url = f'{API_URL}/cohorts/active'
+    r = s.get(url, timeout=5)
+
+    if r.status_code != requests.codes.ok:
+        r.raise_for_status()
+
+    return r.json()
+
+
+# global variables
+guild_id = None
+active_cohort = get_active_cohort()
