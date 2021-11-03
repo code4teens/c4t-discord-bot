@@ -103,7 +103,7 @@ class Events(commands.Cog):
                     dm = await member.create_dm()
 
                     await dm.send(message)
-                except discord.Forbidden as e:
+                except discord.Forbidden as exc:
                     pass
 
         # send log to '#server-log'
@@ -318,22 +318,22 @@ class Events(commands.Cog):
         if ctx.command.name == 'say':
             try:
                 await ctx.message.delete()
-            except discord.Forbidden as e:
+            except discord.Forbidden as exc:
                 pass
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, e):
+    async def on_command_error(self, ctx, exc):
         _now = now()
         guild = self.bot.get_guild(utils.guild_id)
         cmd = f'{ctx.prefix}{ctx.command.name}' \
             if ctx.command is not None else None
 
         # reply with error message
-        if isinstance(e, commands.MissingRole):
+        if isinstance(exc, commands.MissingRole):
             await ctx.reply(f'You are not authorised to use `{cmd}`!')
-        elif isinstance(e, commands.NoPrivateMessage):
+        elif isinstance(exc, commands.NoPrivateMessage):
             await ctx.reply(f'You may not use `{cmd}` in a private message!')
-        elif isinstance(e, commands.CommandNotFound):
+        elif isinstance(exc, commands.CommandNotFound):
             await ctx.reply('I do not recognise that command!')
         else:
             # send log to '#error-log'
@@ -345,7 +345,7 @@ class Events(commands.Cog):
                 f'+ {ctx.message.content}\n'
                 f'+ {user.id}: {user.name}#{user.discriminator}: '
                 f'{user.display_name}\n'
-                f'- {repr(e)}```^\n'
+                f'- {repr(exc)}```^\n'
                 f'{ctx.message.jump_url}'
             )
             chn_error_log = discord.utils.get(
@@ -355,7 +355,7 @@ class Events(commands.Cog):
 
             await chn_error_log.send(message)
 
-            print(f'{red}{_now}: {repr(e)}{reset}')
+            print(f'{red}{_now}: {repr(exc)}{reset}')
 
         await ctx.message.add_reaction('🔴')
 

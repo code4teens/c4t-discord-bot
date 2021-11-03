@@ -65,7 +65,8 @@ class Schedule(commands.Cog):
                 message = (
                     f'Hi {evaluatee.mention}, your reviewer for today is '
                     f'{evaluator.mention}, the two of you may use this '
-                    f'channel to discuss. The discussion ID is `{eval_id}`.'
+                    'channel to communicate. The discussion ID is '
+                    f'`#{eval_id}`.'
                 )
 
                 await chn_eval.send(message)
@@ -162,7 +163,7 @@ class Schedule(commands.Cog):
                     )
             # everyday @ 11:00 am
             elif _now.hour == 11:
-                await self.assign_peers(guild, day, _now.date())
+                await self.assign_peers(guild, day, str(_now.date()))
             # days 1 - 8 @ 4:00 pm
             elif _now.hour == 16:
                 if day != 9:

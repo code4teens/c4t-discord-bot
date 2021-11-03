@@ -64,8 +64,7 @@ class Student(commands.Cog):
         role_devs = get(ctx.guild.roles, name='Pyrates')
         chn_server_log = get(ctx.guild.text_channels, name='server-log')
         msg = await chn_server_log.send(
-            f'{role_devs.mention} Kindly add this bot as soon as possible.\n'
-            '\n'
+            f'{role_devs.mention} Kindly add {ctx.author.mention}\'s bot:\n'
             f'{link}'
         )
 
@@ -88,7 +87,7 @@ class Student(commands.Cog):
                 or isinstance(exc, commands.MissingRequiredArgument):
             await ctx.reply('```$addbot <link>```')
         elif isinstance(exc, self.MultipleBotApplication):
-            await ctx.reply('You already added this bot.')
+            await ctx.reply('Bot already added into server.')
         elif isinstance(exc, self.WrongBotPermissions):
             await ctx.reply(
                 'You are granting your bot the wrong permissions. Kindly '
