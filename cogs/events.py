@@ -221,60 +221,7 @@ class Events(commands.Cog):
                     await chn_eval.set_permissions(user, read_messages=True)
 
             # first-time user creation
-            elif user_r_post.status_code == requests.codes.ok:
-                # update database
-                enrolment_url = f'{API_URL}/enrolments'
-                enrolment_data = {
-                    'user_id': user.id,
-                    'cohort_id': utils.active_cohort['id']
-                }
-                enrolment_r = s.post(
-                    enrolment_url, json=enrolment_data, timeout=5
-                )
-
-                if enrolment_r.status_code != requests.codes.created:
-                    enrolment_r.raise_for_status()  # TODO: log error
-
-                # create user channel
-                role_dev_bot = get(guild.roles, name='Pyrate Bot')
-                role_bocals = get(guild.roles, name='BOCALs')
-                role_observers = get(guild.roles, name='Observers')
-                overwrites = {
-                    role_dev_bot: discord.PermissionOverwrite(
-                        read_messages=True
-                    ),
-                    role_bocals: discord.PermissionOverwrite(
-                        read_messages=True
-                    ),
-                    role_observers: discord.PermissionOverwrite(
-                        read_messages=True
-                    ),
-                    user: discord.PermissionOverwrite(read_messages=True),
-                    guild.default_role: discord.PermissionOverwrite(
-                        read_messages=False
-                    )
-                }
-                topic = 'Test your bot here!'
-                ctg_bot = get(guild.categories, name='bot')
-                chn_eval = await ctg_bot.create_text_channel(
-                    user.name,
-                    overwrites=overwrites,
-                    topic=topic
-                )
-
-                # update database
-                channel_url = f'{API_URL}/channels'
-                channel_data = {
-                    'id': chn_eval.id,
-                    'name': chn_eval.name,
-                    'user_id': user.id,
-                    'cohort_id': utils.active_cohort['id']
-                }
-                channel_r = s.post(channel_url, json=channel_data, timeout=5)
-
-                if channel_r.status_code != requests.codes.created:
-                    channel_r.raise_for_status()  # TODO: log error
-            else:
+            elif user_r_post.status_code != requests.codes.ok:
                 user_r_post.raise_for_status()  # TODO: log error
 
             # assign '@Students' role
@@ -293,6 +240,61 @@ class Events(commands.Cog):
             chn_chit_chat = get(guild.text_channels, name='chit-chat')
 
             await chn_chit_chat.send(message)
+
+            # update database
+            enrolment_url = f'{API_URL}/enrolments'
+            enrolment_data = {
+                'user_id': user.id,
+                'cohort_id': utils.active_cohort['id']
+            }
+            enrolment_r = s.post(
+                enrolment_url, json=enrolment_data, timeout=5
+            )
+
+            if enrolment_r.status_code == requests.codes.conflict:
+                return
+            elif enrolment_r.status_code != requests.codes.created:
+                enrolment_r.raise_for_status()  # TODO: log error
+
+            # create user channel
+            role_dev_bot = get(guild.roles, name='Pyrate Bot')
+            role_bocals = get(guild.roles, name='BOCALs')
+            role_observers = get(guild.roles, name='Observers')
+            overwrites = {
+                role_dev_bot: discord.PermissionOverwrite(
+                    read_messages=True
+                ),
+                role_bocals: discord.PermissionOverwrite(
+                    read_messages=True
+                ),
+                role_observers: discord.PermissionOverwrite(
+                    read_messages=True
+                ),
+                user: discord.PermissionOverwrite(read_messages=True),
+                guild.default_role: discord.PermissionOverwrite(
+                    read_messages=False
+                )
+            }
+            topic = 'Test your bot here!'
+            ctg_bot = get(guild.categories, name='bot')
+            chn_eval = await ctg_bot.create_text_channel(
+                user.name,
+                overwrites=overwrites,
+                topic=topic
+            )
+
+            # update database
+            channel_url = f'{API_URL}/channels'
+            channel_data = {
+                'id': chn_eval.id,
+                'name': chn_eval.name,
+                'user_id': user.id,
+                'cohort_id': utils.active_cohort['id']
+            }
+            channel_r = s.post(channel_url, json=channel_data, timeout=5)
+
+            if channel_r.status_code != requests.codes.created:
+                channel_r.raise_for_status()  # TODO: log error
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
