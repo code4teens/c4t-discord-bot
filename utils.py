@@ -13,8 +13,6 @@ API_KEY = os.getenv('API_KEY')
 COC_MSG_ID = int(os.getenv('COC_MSG_ID'))
 BOT_PERM = int(os.getenv('BOT_PERM'))
 
-COC = os.getenv('COC')
-GUIDE = os.getenv('GUIDE')
 PD1 = os.getenv('PD1')
 PD2 = os.getenv('PD2')
 PD3 = os.getenv('PD3')
@@ -25,8 +23,6 @@ PD7 = os.getenv('PD7')
 PD8 = os.getenv('PD8')
 PD9 = os.getenv('PD9')
 projects = [PD1, PD2, PD3, PD4, PD5, PD6, PD7, PD8, PD9]
-
-PRAG_PADLET = os.getenv('PRAG_PADLET')
 
 # console colours
 reset = '\u001b[0m'

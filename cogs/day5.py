@@ -24,7 +24,7 @@ class Day5(commands.Cog, name='Day 5'):
             '5a85818cb17039f20e3c31ba87005b72/tenor.gif?itemid=17640265',
             'd3dac1b007907d196e3235d7fe251efe/tenor.gif?itemid=16999811',
             '58de9f3c43b92e5f4cacc57714fd9fa5/tenor.gif?itemid=16216173'
-            ]
+        ]
 
     @commands.command()
     async def emoji(self, ctx):
@@ -49,6 +49,7 @@ class Day5(commands.Cog, name='Day 5'):
             value="--- Successful ---",
             inline=False
         )
+
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -64,6 +65,7 @@ class Day5(commands.Cog, name='Day 5'):
         gif = random.choice(self.gifs)
         url = f'https://media1.tenor.com/images/{gif}'
         embed.set_image(url=url)
+
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -73,6 +75,7 @@ class Day5(commands.Cog, name='Day 5'):
         """
         text = f'Hello coders, I am {ctx.author.mention}! Nice to meet you! 😆'
         file = discord.File('assets/logo.png')
+
         await ctx.reply(text, file=file)
 
     @commands.command()
@@ -83,6 +86,7 @@ class Day5(commands.Cog, name='Day 5'):
         url = 'https://i.imgur.com/SKuJOWE.jpeg'
         filename = 'assets/photo.jpg'
         content = requests.get(url).content
+
         with open(filename, 'wb') as f:
             f.write(content)
 
@@ -125,6 +129,7 @@ class Day5(commands.Cog, name='Day 5'):
                 ),
                 inline=False
             )
+
             await ctx.message.add_reaction('✅')
             await ctx.reply(embed=embed)
 

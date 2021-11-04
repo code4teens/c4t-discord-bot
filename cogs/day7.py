@@ -13,43 +13,25 @@ class Day7(commands.Cog, name='Day 7'):
         Scrapes user information from predefined website
         """
         url = 'https://webscraper.io/test-sites/tables'
-        content = requests.get(url).content
+        r = requests.get(url)
+
+        if r.status_code != requests.codes.ok:
+            r.raise_for_status()
+
+        content = r.content
         soup = BeautifulSoup(content, 'html.parser')
+
+        # get user information
         name1 = soup.tbody.tr.td.find_next('td')
-        firstname = name1.text
         name2 = name1.find_next('td')
-        lastname = name2.text
         name3 = name2.find_next('td')
-        username = name3.text
-        await ctx.reply(
-            f'First Name = {firstname}\n'
-            f'Last Name = {lastname}\n'
-            f'Username = {username}'
+        message = (
+            f'First Name = {name1.text}\n'
+            f'Last Name = {name2.text}\n'
+            f'Username = {name3.text}'
         )
 
-    @commands.command()
-    async def currency(self, ctx):
-        """
-        Scrapes USD/MYR exchange rate from predefined website
-        """
-        url = 'https://mtradeasia.com/main/daily-exchange-rates/'
-        content = requests.get(url).content
-        soup = BeautifulSoup(content, 'html.parser')
-
-        # get currency name
-        parent = soup.find('td', attrs={'style': 'line-height: 1;'})
-        child = parent.find('small', attrs={'class': 'spansmall'})
-        currency = child.br.next_sibling
-        update_currency = ' '.join(currency.split())
-
-        # get currency rate
-        webuy = soup.find('td', attrs={'class': 'text-center'}).text
-        rate = ' '.join(webuy.split())
-        msg = (
-            f'Currency: {update_currency}\n'
-            f'Exchange Rate (MYR): {rate}'
-        )
-        await ctx.reply(msg)
+        await ctx.reply(message)
 
     @commands.command()
     async def movie(self, ctx, title):
@@ -59,26 +41,41 @@ class Day7(commands.Cog, name='Day 7'):
         Args:
             title: Movie title wrapped in double quotes
         """
-        url = f'https://www.imdb.com/find?q={title}&s=tt&ttype=ft&ref_=fn_ft'
-        content = requests.get(url).content
-        soup = BeautifulSoup(content, 'html.parser')
+        search_url = \
+            f'https://www.imdb.com/find?q={title}&s=tt&ttype=ft&ref_=fn_ft'
+        search_r = requests.get(search_url)
+
+        if search_r.status_code != requests.codes.ok:
+            search_r.raise_for_status()
+
+        search_content = search_r.content
+        soup = BeautifulSoup(search_content, 'html.parser')
+
+        # scrape search results
         result = soup.find('td', attrs={'class': 'result_text'})
         movie_link = result.a.get('href')
-        movie_name = result.a.text
+        movie_title = result.a.text
 
         # scrape movie storyline
-        url2 = f'https://www.imdb.com{movie_link}'
-        content2 = requests.get(url2).content
-        soup = BeautifulSoup(content2, 'html.parser')
+        movie_url = f'https://www.imdb.com{movie_link}'
+        movie_r = requests.get(movie_url)
+
+        if movie_r.status_code != requests.codes.ok:
+            movie_r.raise_for_status()
+
+        movie_content = movie_r.content
+        soup = BeautifulSoup(movie_content, 'html.parser')
         parent = soup.find(
             'div', attrs={'class': 'ipc-html-content ipc-html-content--base'}
         )
-        element = parent.div.text
-        msg = (
-            f'Movie Name: {movie_name}\n'
-            f'Storyline: {element}'
+        storyline = parent.div.text
+        message = (
+            f'Movie Title: {movie_title}\n'
+            '\n'
+            f'Storyline: {storyline}'
         )
-        await ctx.reply(msg)
+
+        await ctx.reply(message)
 
     @movie.error
     async def movie_error(self, ctx, exc):
