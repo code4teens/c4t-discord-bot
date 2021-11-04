@@ -11,13 +11,16 @@ class Hidden(commands.Cog, name='Hidden'):
         """
         Tells a joke
         """
-        url = 'https://official-joke-api.appspot.com/random_joke'
-        data = requests.get(url).json()
-        await ctx.reply(
-            f'{data["setup"]}\n'
-            '\n'
-            f'*{data["punchline"].strip()}*'
-        )
+        url = 'https://icanhazdadjoke.com'
+        headers = {'Accept': 'application/json'}
+        r = requests.get(url, headers=headers)
+
+        if r.status_code != requests.codes.ok:
+            r.raise_for_status()
+
+        data = r.json()
+
+        await ctx.reply(data['joke'])
 
     @commands.command(hidden=True)
     async def ichooseyou(self, ctx, pokemon):
@@ -28,7 +31,13 @@ class Hidden(commands.Cog, name='Hidden'):
             pokemon: Pokémon name or index number
         """
         url = f'https://pokeapi.co/api/v2/pokemon/{pokemon}'
-        data = requests.get(url).json()
+        r = requests.get(url)
+
+        if r.status_code != requests.codes.ok:
+            r.raise_for_status()
+
+        data = r.json()
+
         await ctx.reply(data['sprites']['front_default'])
 
     @ichooseyou.error

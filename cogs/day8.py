@@ -8,39 +8,40 @@ class Day8(commands.Cog, name='Day 8'):
 
     def get_ip(self):
         url = 'https://api.ipify.org/?format=json'
-        data = requests.get(url).json()
+        r = requests.get(url)
+
+        if r.status_code != requests.codes.ok:
+            r.raise_for_status()
+
+        data = r.json()
+
         return data['ip']
 
     @commands.command()
     async def ip(self, ctx):
         """
-        Returns the bot's IPv4 address
+        Returns bot's IPv4 address
         """
         ip = self.get_ip()
+
         await ctx.reply(ip)
 
     @commands.command()
-    async def iplocation(self, ctx):
+    async def iploc(self, ctx):
         """
-        Returns the bot's location
+        Returns bot's location
         """
         ip = self.get_ip()
         url = f'https://ipinfo.io/{ip}/geo'
-        data = requests.get(url).json()
-        await ctx.reply(f'{data["city"]}, {data["region"]}, {data["country"]}')
+        r = requests.get(url)
 
-    @commands.command()
-    async def iplocation_2(self, ctx):
-        """
-        Reacts with a flag corresponding to the bot's location
-        """
-        ip = self.get_ip()
-        url = f'https://ipinfo.io/{ip}/geo'
-        url2 = f'https://api.ip2country.info/ip?{ip}'
-        data = requests.get(url).json()
-        data2 = requests.get(url2).json()
-        await ctx.reply(f'{data["city"]}, {data["region"]}, {data["country"]}')
-        await ctx.message.add_reaction(data2['countryEmoji'])
+        if r.status_code != requests.codes.ok:
+            r.raise_for_status()
+
+        data = r.json()
+        message = f'{data["city"]}, {data["region"]}, {data["country"]}'
+
+        await ctx.reply(message)
 
 
 def setup(bot):

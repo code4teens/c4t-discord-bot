@@ -335,6 +335,8 @@ class Events(commands.Cog):
             await ctx.reply(f'You may not use `{cmd}` in a private message!')
         elif isinstance(exc, commands.CommandNotFound):
             await ctx.reply('I do not recognise that command!')
+        elif isinstance(exc, commands.CommandInvokeError):
+            await ctx.reply('Something went wrong...')
         else:
             # send log to '#error-log'
             user = ctx.author
