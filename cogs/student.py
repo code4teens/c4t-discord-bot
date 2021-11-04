@@ -93,8 +93,6 @@ class Student(commands.Cog):
                 'You are granting your bot the wrong permissions. Kindly '
                 'reconfigure and try again.'
             )
-        elif isinstance(exc, requests.exceptions.RequestException):
-            await ctx.reply('Something went wrong...')
 
 
 def setup(bot):

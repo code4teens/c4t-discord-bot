@@ -1,9 +1,7 @@
-from datetime import datetime
-
 from discord.ext import commands
 import discord
 
-from utils import API_URL, s, tz
+from utils import API_URL, s
 import requests
 
 
@@ -18,11 +16,6 @@ class Dev(commands.Cog):
         This inherits from :exc:`CommandError`.
         """
         pass
-
-    def to_date(argument):
-        date = datetime.strptime(argument, '%Y-%m-%d')
-
-        return date.astimezone(tz)
 
     @commands.command()
     @commands.has_role('Pyrates')
@@ -96,8 +89,6 @@ class Dev(commands.Cog):
         if isinstance(exc, commands.BadArgument) \
                 or isinstance(exc, commands.MissingRequiredArgument):
             await ctx.reply('```$givexp <student> <xp>```')
-        elif isinstance(exc, requests.exceptions.RequestException):
-            await ctx.reply('Something went wrong...')
 
 
 def setup(bot):
