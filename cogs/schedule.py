@@ -119,7 +119,7 @@ class Schedule(commands.Cog):
                 await chn_server_log.send(
                     f'This is a scheduled test message for Day {day}.'
                 )
-            # day 1 @ 8:00 am
+            # everyday @ 8:00 am
             elif _now.hour == 8:
                 if day == 1:
                     await chn_chit_chat.send(
@@ -127,42 +127,24 @@ class Schedule(commands.Cog):
                         'reminder for our Townhall at 9:00 am. See you at '
                         f'{chn_townhall.mention}!'
                     )
-            # days 2 - 8 @ 9:00 am
-            elif _now.hour == 9:
-                if day != 1 and day != 9:
+                elif day == 4:
+                    await self.assign_groups(guild)
                     await chn_alerts.send(
-                        f'Good Morning {role_students.mention}, this is your '
-                        f'Day-0{day} assignment. All the best!\n'
-                        '\n'
-                        f'{utils.projects[day - 1]}'
+                        f'Good Morning {role_students.mention}, you are put '
+                        'into groups for your Day-09 project. All the best!\n'
                     )
-                # on day 9
                 elif day == 9:
                     await chn_chit_chat.send(
                         f'Good Morning {role_students.mention}, all the best '
                         'on your final day!'
                     )
-
-                # also on day 4
-                if day == 4:
-                    await self.assign_groups(guild)
+                else:
                     await chn_alerts.send(
-                        'You are also put into groups for your Day-09 group '
-                        'assignment. Good luck!\n'
-                        '\n'
-                        f'{utils.projects[-1]}'
-                    )
-            # day 1 @ 10:00 am
-            elif _now.hour == 10:
-                if day == 1:
-                    await chn_alerts.send(
-                        f'Hi {role_students.mention}, this is your Day-0{day} '
-                        'assignment. All the best!\n'
-                        '\n'
-                        f'{utils.projects[day - 1]}'
+                        f'Good Morning {role_students.mention}, all the best '
+                        'for today!\n'
                     )
             # everyday @ 11:00 am
-            elif _now.hour == 11:
+            elif _now.hour == 10:
                 await self.assign_peers(guild, day, str(_now.date()))
             # days 1 - 8 @ 4:00 pm
             elif _now.hour == 16:
