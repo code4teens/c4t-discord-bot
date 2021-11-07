@@ -19,6 +19,16 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
+        # send log to '#server-log'
+        chn_server_log = get(member.guild.text_channels, name='server-log')
+
+        await chn_server_log.send(
+            '```diff\n'
+            f'# {now()}\n'
+            '\n'
+            f'+ {member}: {member.id} joined the server.```'
+        )
+
         if member.bot:
             # update bot table
             bot_url = f'{API_URL}/bots/{member.id}'
@@ -97,16 +107,6 @@ class Events(commands.Cog):
             elif user_r.status_code != requests.codes.ok:
                 user_r.raise_for_status()
 
-        # send log to '#server-log'
-        chn_server_log = get(member.guild.text_channels, name='server-log')
-
-        await chn_server_log.send(
-            '```diff\n'
-            f'# {now()}\n'
-            '\n'
-            f'+ {member}: {member.id} joined the server.```'
-        )
-
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         if before.display_name == after.display_name:
@@ -151,15 +151,6 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        if member.bot:
-            url = f'{API_URL}/bots/{member.id}'
-            r = s.delete(url, timeout=5)
-
-            if r.status_code == requests.codes.not_found:
-                return
-            elif r.status_code != requests.codes.ok:
-                r.raise_for_status()
-
         # send log to '#server-log'
         chn_server_log = get(member.guild.text_channels, name='server-log')
 
@@ -169,6 +160,15 @@ class Events(commands.Cog):
             '\n'
             f'- {member}: {member.id} left the server.```'
         )
+
+        if member.bot:
+            url = f'{API_URL}/bots/{member.id}'
+            r = s.delete(url, timeout=5)
+
+            if r.status_code == requests.codes.not_found:
+                return
+            elif r.status_code != requests.codes.ok:
+                r.raise_for_status()
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
