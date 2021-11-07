@@ -10,8 +10,11 @@ load_dotenv()
 TOKEN = os.getenv('TOKEN')
 API_URL = os.getenv('API_URL')
 API_KEY = os.getenv('API_KEY')
-COC_MSG_ID = int(os.getenv('COC_MSG_ID'))
 BOT_PERM = int(os.getenv('BOT_PERM'))
+DPY_ALPHA = int(os.getenv('DPY_ALPHA'))
+DPY_BETA = int(os.getenv('DPY_BETA'))
+DPY_DEC2021 = int(os.getenv('DPY_DEC2021'))
+DPY_TEST = int(os.getenv('DPY_TEST'))
 
 # console colours
 reset = '\u001b[0m'
@@ -44,3 +47,4 @@ def get_active_cohort():
 # global variables
 guild_id = None
 active_cohort = get_active_cohort()
+dpy = [DPY_ALPHA, DPY_BETA, DPY_DEC2021, DPY_TEST]
