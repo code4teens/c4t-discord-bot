@@ -68,15 +68,15 @@ class Student(commands.Cog):
             f'{link}'
         )
 
-        # update database
+        # update bot table
         post_url = f'{API_URL}/bots'
-        data = {
+        post_data = {
             'id': bot_id,
             'user_id': ctx.author.id,
             'cohort_id': utils.active_cohort['id'],
             'msg_id': msg.id
         }
-        post_r = s.post(post_url, json=data, timeout=5)
+        post_r = s.post(post_url, json=post_data, timeout=5)
 
         if post_r.status_code != requests.codes.created:
             post_r.raise_for_status()
