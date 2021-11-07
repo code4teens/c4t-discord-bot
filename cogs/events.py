@@ -221,6 +221,7 @@ class Events(commands.Cog):
         elif isinstance(exc, commands.CommandNotFound):
             await ctx.reply('I do not recognise that command!')
         elif isinstance(exc, commands.CommandInvokeError):
+            print(f'{red}{_now}: {repr(exc)}{reset}')
             await ctx.reply('Something went wrong...')
         else:
             # send log to '#error-log'
