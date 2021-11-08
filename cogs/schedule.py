@@ -14,7 +14,7 @@ class Schedule(commands.Cog):
         self.bot = bot
         self.trigger_loop.start()
 
-    async def assign_peers(self, cohort_data, guild, day, date):
+    async def assign_peers(self, guild, cohort_data, day, date):
         # get & shuffle students
         role_students = get(guild.roles, name='Students')
         students = role_students.members
