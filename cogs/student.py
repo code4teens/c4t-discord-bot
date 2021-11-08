@@ -50,7 +50,7 @@ class Student(commands.Cog):
 
         # get bot data
         get_url = f'{API_URL}/bots/{bot_id}'
-        get_r = s.get(get_url, timeout=5)
+        get_r = s.get(get_url, timeout=10)
 
         if get_r.status_code == requests.codes.ok:
             raise self.MultipleBotApplication
@@ -76,7 +76,7 @@ class Student(commands.Cog):
             'cohort_id': utils.active_cohort['id'],
             'msg_id': msg.id
         }
-        post_r = s.post(post_url, json=post_data, timeout=5)
+        post_r = s.post(post_url, json=post_data, timeout=10)
 
         if post_r.status_code != requests.codes.created:
             post_r.raise_for_status()

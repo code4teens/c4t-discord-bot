@@ -36,7 +36,7 @@ def now():
 
 def get_active_cohort():
     url = f'{API_URL}/cohorts/active'
-    r = s.get(url, timeout=5)
+    r = s.get(url, timeout=10)
 
     if r.status_code != requests.codes.ok:
         r.raise_for_status()

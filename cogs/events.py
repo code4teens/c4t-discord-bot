@@ -37,7 +37,7 @@ class Events(commands.Cog):
                 'discriminator': member.discriminator,
                 'display_name': member.display_name
             }
-            bot_r = s.put(bot_url, json=put_bot_data, timeout=5)
+            bot_r = s.put(bot_url, json=put_bot_data, timeout=10)
 
             if bot_r.status_code == requests.codes.not_found:
                 return
@@ -58,7 +58,7 @@ class Events(commands.Cog):
 
                 # get user data
                 user_url = f'{API_URL}/users/{user_id}'
-                user_r = s.get(user_url, timeout=5)
+                user_r = s.get(user_url, timeout=10)
 
                 if user_r.status_code != requests.codes.ok:
                     user_r.raise_for_status()
@@ -100,7 +100,7 @@ class Events(commands.Cog):
                 'discriminator': member.discriminator,
                 'display_name': member.display_name
             }
-            user_r = s.put(user_url, json=put_user_data, timeout=5)
+            user_r = s.put(user_url, json=put_user_data, timeout=10)
 
             if user_r.status_code == requests.codes.not_found:
                 return
@@ -119,7 +119,7 @@ class Events(commands.Cog):
             url = f'{API_URL}/users/{after.id}'
 
         data = {'display_name': after.display_name}
-        r = s.put(url, json=data, timeout=5)
+        r = s.put(url, json=data, timeout=10)
 
         if r.status_code == requests.codes.not_found:
             return
@@ -142,7 +142,7 @@ class Events(commands.Cog):
             'name': after.name,
             'discriminator': after.discriminator,
         }
-        r = s.put(url, json=data, timeout=5)
+        r = s.put(url, json=data, timeout=10)
 
         if r.status_code == requests.codes.not_found:
             return
@@ -163,7 +163,7 @@ class Events(commands.Cog):
 
         if member.bot:
             url = f'{API_URL}/bots/{member.id}'
-            r = s.delete(url, timeout=5)
+            r = s.delete(url, timeout=10)
 
             if r.status_code == requests.codes.not_found:
                 return
@@ -178,7 +178,7 @@ class Events(commands.Cog):
         # update channel table
         url = f'{API_URL}/channels/{after.id}'
         data = {'name': after.name}
-        r = s.put(url, json=data, timeout=5)
+        r = s.put(url, json=data, timeout=10)
 
         if r.status_code == requests.codes.not_found:
             return
@@ -189,7 +189,7 @@ class Events(commands.Cog):
     async def on_guild_channel_delete(self, channel):
         # update channel table
         url = f'{API_URL}/channels/{channel.id}'
-        r = s.delete(url, timeout=5)
+        r = s.delete(url, timeout=10)
 
         if r.status_code == requests.codes.not_found:
             return

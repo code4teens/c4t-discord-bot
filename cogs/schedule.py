@@ -28,7 +28,7 @@ class Schedule(commands.Cog):
 
             # get evaluatee data
             user_url = f'{API_URL}/users/{evaluatee.id}'
-            user_r = s.get(user_url, timeout=5)
+            user_r = s.get(user_url, timeout=10)
             user_data = user_r.json()
             chn_eval_id = next(
                 channel['id'] for channel in user_data['channels']
@@ -50,7 +50,7 @@ class Schedule(commands.Cog):
                     'cohort_id': utils.active_cohort['id'],
                     'date': date
                 }
-                eval_r = s.post(eval_url, json=post_eval_data, timeout=5)
+                eval_r = s.post(eval_url, json=post_eval_data, timeout=10)
 
                 if eval_r.status_code != requests.codes.created:
                     eval_r.raise_for_status()

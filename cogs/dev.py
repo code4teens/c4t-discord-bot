@@ -61,7 +61,7 @@ class Dev(commands.Cog):
         """
         # get user data
         url = f'{API_URL}/users/{user.id}'
-        get_r = s.get(url, timeout=5)
+        get_r = s.get(url, timeout=10)
 
         if get_r.status_code != requests.codes.ok:
             get_r.raise_for_status()
@@ -69,7 +69,7 @@ class Dev(commands.Cog):
         # update user table
         data = get_r.json()
         put_data = {'xp': data['xp'] + xp}
-        put_r = s.put(url, json=put_data, timeout=5)
+        put_r = s.put(url, json=put_data, timeout=10)
 
         if put_r.status_code != requests.codes.ok:
             put_r.raise_for_status()
@@ -92,7 +92,7 @@ class Dev(commands.Cog):
             'discriminator': user.discriminator,
             'display_name': user.display_name
         }
-        user_r = s.post(user_url, json=post_user_data, timeout=5)
+        user_r = s.post(user_url, json=post_user_data, timeout=10)
 
         if user_r.status_code != requests.codes.created \
                 and user_r.status_code != requests.codes.conflict:
@@ -106,7 +106,7 @@ class Dev(commands.Cog):
             'cohort_id': cohort_id
         }
         enrolment_r = s.post(
-            enrolment_url, json=post_enrolment_data, timeout=5
+            enrolment_url, json=post_enrolment_data, timeout=10
         )
 
         if enrolment_r.status_code != requests.codes.created \
@@ -155,7 +155,7 @@ class Dev(commands.Cog):
                 'user_id': user.id,
                 'cohort_id': cohort_id
             }
-            channel_r = s.post(channel_url, json=post_channel_data, timeout=5)
+            channel_r = s.post(channel_url, json=post_channel_data, timeout=10)
 
             if channel_r.status_code == requests.codes.conflict:
                 await chn_eval.delete()
@@ -185,7 +185,7 @@ class Dev(commands.Cog):
             )
         else:
             cohort_url = f'{API_URL}/cohorts/{cohort_id}'
-            cohort_r = s.get(cohort_url, timeout=5)
+            cohort_r = s.get(cohort_url, timeout=10)
 
             if cohort_r.status_code != requests.codes.ok:
                 cohort_r.raise_for_status()
