@@ -1,6 +1,7 @@
 from discord.ext import commands
 import requests
 
+from utils import API_URL, s
 
 class Day8(commands.Cog, name='Day 8'):
     def __init__(self, bot):
@@ -40,6 +41,25 @@ class Day8(commands.Cog, name='Day 8'):
 
         data = r.json()
         message = f'{data["city"]}, {data["region"]}, {data["country"]}'
+
+        await ctx.reply(message)
+
+    @commands.command()
+    async def me(self, ctx):
+        """
+        Returns user's basic information
+        """
+        url = f'{API_URL}/users/{ctx.author.id}'
+        r = s.get(url, timeout=10)
+
+        if r.status_code != requests.codes.ok:
+            r.raise_for_status()
+
+        data = r.json()
+        message = (
+            f'Your account was created at {data["created_at"]} and last '
+            f'updated at {data["last_updated"]}.'
+        )
 
         await ctx.reply(message)
 
