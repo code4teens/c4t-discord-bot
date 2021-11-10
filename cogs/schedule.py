@@ -99,7 +99,8 @@ class Schedule(commands.Cog):
         utils.active_cohort = get_active_cohort()
         cohort_data = utils.active_cohort
         start_date = datetime.strptime(cohort_data['start_date'], '%Y-%m-%d')\
-            .astimezone(tz)
+            .astimezone(tz)\
+            .replace(hour=0)
         _now = now()
 
         if _now >= start_date \
