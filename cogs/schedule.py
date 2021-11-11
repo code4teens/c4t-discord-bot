@@ -3,6 +3,7 @@ import random
 
 from discord.ext import commands, tasks
 from discord.utils import get
+import discord
 
 from utils import API_URL, get_active_cohort, green, now, reset, s, tz
 import requests
@@ -70,17 +71,50 @@ class Schedule(commands.Cog):
 
                 await chn_eval.send(message)
 
-    async def assign_groups(self, guild):
-        async def create_village_role(i):
-            role = await guild.create_role(f'Village {i}')
+    async def assign_groups(self, guild, cohort_data):
+        async def create_village_channels(cohort_data, role_village, i):
+            role_dev_bot = get(guild.roles, name='Pyrate Bot')
+            role_bocals = get(guild.roles, name='BOCALs')
+            role_observers = get(guild.roles, name='Observers')
+            overwrites = {
+                role_dev_bot: discord.PermissionOverwrite(read_messages=True),
+                role_bocals: discord.PermissionOverwrite(read_messages=True),
+                role_observers: discord.PermissionOverwrite(read_messages=True),
+                role_village: discord.PermissionOverwrite(read_messages=True),
+                guild.default_role: discord.PermissionOverwrite(
+                    read_messages=False
+                )
+            }
+            topic = 'Test your village bot here!'
+            ctg_cohort = get(guild.categories, name=cohort_data['nickname'])
 
-            return role
+            await ctg_cohort.create_text_channel(
+                f'village {i + 1}',
+                overwrites=overwrites,
+                topic=topic
+            )
+
+            await ctg_cohort.create_voice_channel(
+                f'village {i + 1} voice',
+                overwrites=overwrites
+            )
+
+        def get_village_role(i):
+            return get(guild.roles, name=f'Village {i + 1}')
 
         role_students = get(guild.roles, name='Students')
         students = role_students.members
         random.shuffle(students)
         n = len(students) // 5  # max no. of students per village
-        roles_villages = [x for x in map(create_village_role, range(1, n))]
+
+        if len(students) % 5 > 2:
+            n += 1
+
+        for i in range(n):
+            role_village = await guild.create_role(name=f'Village {i + 1}')
+            await create_village_channels(cohort_data, role_village, i)
+
+        roles_villages = [x for x in map(get_village_role, range(n))]
         chunks = (students[i:i + n] for i in range(0, len(students), n))
 
         for chunk in chunks:
@@ -132,7 +166,7 @@ class Schedule(commands.Cog):
                             f'{chn_townhall.mention}!'
                         )
                     elif day == 4:
-                        await self.assign_groups(guild)
+                        await self.assign_groups(guild, cohort_data)
                         await chn_alerts.send(
                             f'Good Morning {role_students.mention}, you are '
                             'put into groups for your Day-09 project. All the '
