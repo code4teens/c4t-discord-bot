@@ -31,16 +31,16 @@ class Schedule(commands.Cog):
             user_url = f'{API_URL}/users/{evaluatee.id}'
             user_r = s.get(user_url, timeout=10)
             user_data = user_r.json()
-            chn_eval_id = next(
-                channel['id'] for channel in user_data['channels']
-                if channel['cohort']['id'] == cohort_data['id']
-            )
-            chn_eval = get(guild.text_channels, id=chn_eval_id)
+            # chn_eval_id = next(
+            #     channel['id'] for channel in user_data['channels']
+            #     if channel['cohort']['id'] == cohort_data['id']
+            # )
+            # chn_eval = get(guild.text_channels, id=chn_eval_id)
 
             # deny other students permission to view evaluatee channel
-            for user in chn_eval.members:
-                if user in students and user.id != evaluatee.id:
-                    await chn_eval.set_permissions(user, overwrite=None)
+            # for user in chn_eval.members:
+            #     if user in students and user.id != evaluatee.id:
+            #         await chn_eval.set_permissions(user, overwrite=None)
 
             if day != cohort_data['duration']:
                 # update eval table
@@ -57,7 +57,7 @@ class Schedule(commands.Cog):
                     eval_r.raise_for_status()
 
                 # grant new tester permission to view evaluatee channel
-                await chn_eval.set_permissions(evaluator, view_channel=True)
+                # await chn_eval.set_permissions(evaluator, view_channel=True)
 
                 # send message to evaluatee channel informing evaluation pairs
                 eval_data = eval_r.json()
@@ -69,7 +69,7 @@ class Schedule(commands.Cog):
                     f'`#{eval_id}`.'
                 )
 
-                await chn_eval.send(message)
+                # await chn_eval.send(message)
 
     async def assign_groups(self, guild, cohort_data):
         async def create_village_channels(cohort_data, role_village, i):
@@ -79,7 +79,8 @@ class Schedule(commands.Cog):
             overwrites = {
                 role_dev_bot: discord.PermissionOverwrite(read_messages=True),
                 role_bocals: discord.PermissionOverwrite(read_messages=True),
-                role_observers: discord.PermissionOverwrite(read_messages=True),
+                role_observers:
+                    discord.PermissionOverwrite(read_messages=True),
                 role_village: discord.PermissionOverwrite(read_messages=True),
                 guild.default_role: discord.PermissionOverwrite(
                     read_messages=False
@@ -203,6 +204,23 @@ class Schedule(commands.Cog):
                             'for our Townhall at 6:00 pm. See you at '
                             f'{chn_townhall.mention}!'
                         )
+            # Code4Work discord.py Botcamp
+            elif cohort_data['id'] in utils.c4w_dpy:
+                # everyday @ 7:00 am
+                if _now.hour == 7:
+                    await chn_server_log.send(
+                        'This is a scheduled test message for '
+                        f'{cohort_data["name"]} Day {day}.'
+                    )
+                # everyday @ 8:00 am
+                elif _now.hour == 8:
+                    if day == 4:
+                        await self.assign_groups(guild, cohort_data)
+                # everyday @ 10:00 am
+                elif _now.hour == 10:
+                    await self.assign_peers(
+                        guild, cohort_data, day, str(_now.date())
+                    )
 
     @trigger_loop.before_loop
     async def before_trigger_loop(self):

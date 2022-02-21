@@ -15,6 +15,7 @@ DPY_ALPHA = int(os.getenv('DPY_ALPHA'))
 DPY_BETA = int(os.getenv('DPY_BETA'))
 DPY_DEC2021 = int(os.getenv('DPY_DEC2021'))
 DPY_TEST = int(os.getenv('DPY_TEST'))
+C4W_DPY_FEB2022 = int(os.getenv('C4W_DPY_FEB2022'))
 
 # console colours
 reset = '\u001b[0m'
@@ -48,3 +49,4 @@ def get_active_cohort():
 guild_id = None
 active_cohort = get_active_cohort()
 dpy = [DPY_ALPHA, DPY_BETA, DPY_DEC2021, DPY_TEST]
+c4w_dpy = [C4W_DPY_FEB2022]
