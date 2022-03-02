@@ -218,8 +218,10 @@ class Events(commands.Cog):
             await ctx.reply(f'You are not authorised to use `{cmd}`!')
         elif isinstance(exc, commands.NoPrivateMessage):
             await ctx.reply(f'You may not use `{cmd}` in a private message!')
-        elif isinstance(exc, commands.CommandNotFound):
-            await ctx.reply('I do not recognise that command!')
+        # elif isinstance(exc, commands.CommandNotFound):
+        #     await ctx.reply('I do not recognise that command!')
+        elif isinstance(exc, commands.MissingRequiredArgument):
+            pass
         elif isinstance(exc, commands.CommandInvokeError):
             print(f'{red}{_now}: {repr(exc)}{reset}')
             await ctx.reply('Something went wrong...')

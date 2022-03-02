@@ -124,6 +124,7 @@ class Dev(commands.Cog):
             role_dev_bot = get(ctx.guild.roles, name='Pyrate Bot')
             role_bocals = get(ctx.guild.roles, name='BOCALs')
             role_observers = get(ctx.guild.roles, name='Observers')
+            role_digital_penang = get(ctx.guild.roles, name='Digital Penang')
             overwrites = {
                 role_dev_bot: discord.PermissionOverwrite(
                     read_messages=True
@@ -132,6 +133,10 @@ class Dev(commands.Cog):
                     read_messages=True
                 ),
                 role_observers: discord.PermissionOverwrite(
+                    read_messages=True
+                ),
+                # digital penang
+                role_digital_penang: discord.PermissionOverwrite(
                     read_messages=True
                 ),
                 user: discord.PermissionOverwrite(read_messages=True),
@@ -163,14 +168,18 @@ class Dev(commands.Cog):
                 channel_r.raise_for_status()
 
             # assign cohort role
-            if cohort_id == utils.DPY_ALPHA:
-                role_name = 'discord.py Botcamp (Alpha)'
-            elif cohort_id == utils.DPY_BETA:
-                role_name = 'discord.py Botcamp (Beta)'
-            elif cohort_id == utils.DPY_DEC2021:
-                role_name = 'discord.py Botcamp (Dec 2021)'
-            elif cohort_id == utils.DPY_TEST:
-                role_name = 'discord.py Botcamp (Test)'
+            if cohort_id == utils.C4T_DPY_ALPHA:
+                role_name = 'C4T discord.py Botcamp (Alpha)'
+            elif cohort_id == utils.C4T_DPY_BETA:
+                role_name = 'C4T discord.py Botcamp (Beta)'
+            elif cohort_id == utils.C4T_DPY_DEC2021:
+                role_name = 'C4T discord.py Botcamp (Dec 2021)'
+            elif cohort_id == utils.C4W_DPY_FEB2022:
+                role_name = 'C4W discord.py Botcamp (Feb 2022)'
+            elif cohort_id == utils.C4T_DPY_MAR2022:
+                role_name = 'C4T discord.py Botcamp (Mar 2022)'
+            elif cohort_id == utils.C4T_DPY_TEST:
+                role_name = 'C4T discord.py Botcamp (Test)'
 
             role_cohort = get(ctx.guild.roles, name=role_name)
 

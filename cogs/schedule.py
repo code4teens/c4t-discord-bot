@@ -31,13 +31,13 @@ class Schedule(commands.Cog):
             user_url = f'{API_URL}/users/{evaluatee.id}'
             user_r = s.get(user_url, timeout=10)
             user_data = user_r.json()
-            # chn_eval_id = next(
-            #     channel['id'] for channel in user_data['channels']
-            #     if channel['cohort']['id'] == cohort_data['id']
-            # )
-            # chn_eval = get(guild.text_channels, id=chn_eval_id)
+            chn_eval_id = next(
+                channel['id'] for channel in user_data['channels']
+                if channel['cohort']['id'] == cohort_data['id']
+            )
+            chn_eval = get(guild.text_channels, id=chn_eval_id)
 
-            # deny other students permission to view evaluatee channel
+            # # deny other students permission to view evaluatee channel
             # for user in chn_eval.members:
             #     if user in students and user.id != evaluatee.id:
             #         await chn_eval.set_permissions(user, overwrite=None)
@@ -57,7 +57,7 @@ class Schedule(commands.Cog):
                     eval_r.raise_for_status()
 
                 # grant new tester permission to view evaluatee channel
-                # await chn_eval.set_permissions(evaluator, view_channel=True)
+                await chn_eval.set_permissions(evaluator, view_channel=True)
 
                 # send message to evaluatee channel informing evaluation pairs
                 eval_data = eval_r.json()
@@ -65,11 +65,10 @@ class Schedule(commands.Cog):
                 message = (
                     f'Hi {evaluatee.mention}, your reviewer for today is '
                     f'{evaluator.mention}, the two of you may use this '
-                    'channel to communicate. The discussion ID is '
-                    f'`#{eval_id}`.'
+                    'channel to communicate.'
                 )
 
-                # await chn_eval.send(message)
+                await chn_eval.send(message)
 
     async def assign_groups(self, guild, cohort_data):
         async def create_village_channels(cohort_data, role_village, i):
@@ -150,8 +149,8 @@ class Schedule(commands.Cog):
             chn_townhall = get(guild.voice_channels, name='townhall')
             role_students = get(guild.roles, name='Students')
 
-            # discord.py Botcamp
-            if cohort_data['id'] in utils.dpy:
+            # C4T discord.py Botcamp
+            if cohort_data['id'] in utils.c4t_dpy:
                 # everyday @ 7:00 am
                 if _now.hour == 7:
                     await chn_server_log.send(
@@ -167,7 +166,7 @@ class Schedule(commands.Cog):
                             f'{chn_townhall.mention}!'
                         )
                     elif day == 4:
-                        await self.assign_groups(guild, cohort_data)
+                        # await self.assign_groups(guild, cohort_data)
                         await chn_alerts.send(
                             f'Good Morning {role_students.mention}, you are '
                             'put into groups for your Day-09 project. All the '
@@ -204,7 +203,7 @@ class Schedule(commands.Cog):
                             'for our Townhall at 6:00 pm. See you at '
                             f'{chn_townhall.mention}!'
                         )
-            # Code4Work discord.py Botcamp
+            # C4W discord.py Botcamp
             elif cohort_data['id'] in utils.c4w_dpy:
                 # everyday @ 7:00 am
                 if _now.hour == 7:
@@ -212,10 +211,10 @@ class Schedule(commands.Cog):
                         'This is a scheduled test message for '
                         f'{cohort_data["name"]} Day {day}.'
                     )
-                # everyday @ 8:00 am
-                elif _now.hour == 8:
-                    if day == 4:
-                        await self.assign_groups(guild, cohort_data)
+                # # everyday @ 8:00 am
+                # elif _now.hour == 8:
+                #     if day == 4:
+                #         await self.assign_groups(guild, cohort_data)
                 # everyday @ 10:00 am
                 elif _now.hour == 10:
                     await self.assign_peers(
