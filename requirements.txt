@@ -2,4 +2,4 @@ bs4==0.0.1
 discord.py==1.7.3
 python-dotenv==0.19.2
 pytz==2021.3
-requests==2.27.1
+requests==2.31.0
